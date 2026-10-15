@@ -39,3 +39,7 @@ Operator mengonfirmasi guru/konselor tidak memiliki email. PR #6 menghapus input
 ## M-002C2B — Password reset admin tanpa email
 
 Pengembangan reset password staf telah selesai pada branch Draft PR #6 (belum di main). Supabase migration `20261015154828` applied dan SQL rollback keamanan PASS. 51/51 unit PASS, npm audit 0, Preview 7/7 PASS. Satu admin eksisting tidak disentuh; 0 operasi reset persisten. Karena tidak ada QA Supabase terisolasi, kompatibilitas alamat teknis `.invalid` dan Auth create/login/reset/delete masih **NOT RUN**. Production create/reset tetap OFF sampai QA dan prosedur rekonsiliasi tersedia. [Bukti dan risiko](docs/milestones/M002C2A-checkpoint.md).
+
+## QA Auth lokal dengan Docker
+
+Docker Desktop sudah tersedia di komputer operator. PR #6 menambahkan `scripts/qa-local-auth.ps1` dan pemeriksaan URL localhost saja. Runner CI Windows hanya memeriksa sintaks; **pengujian Docker/Auth yang sebenarnya masih NOT RUN**. Lihat [panduan](docs/qa/m002c2-local-auth-provider.md). Production tetap terkunci.

@@ -84,3 +84,15 @@ Operator memilih mode akun staf tanpa email. Pemulihan password tidak menggunaka
 5. Staff create UI, guru/siswa, class/enrollment/assignment mutasi: NOT RUN. Data siswa nyata tetap dilarang sebelum gate role isolation.
 
 **Keputusan:** PR #6 tetap **Draft**. Migrasi telah diterapkan tanpa mengubah akun aktif; kode fitur account provisioning/reset hanya ada pada branch. Jangan mengaktifkan `ACCOUNT_PROVISIONING_ENABLED` di Production.
+
+## QA lokal menggunakan Docker Desktop (15 Oktober 2026)
+
+Operator telah memastikan Docker Desktop tersedia. Script Windows `scripts/qa-local-auth.ps1` dengan panduan [isolated QA](../qa/m002c2-local-auth-provider.md) sudah ditambahkan.
+
+- Membuat proyek Supabase sementara terpisah dengan project ID unik dan API di `http://127.0.0.1:55321`; tidak ada Supabase login, link, db push atau kredensial produksi.
+- Enam uji Auth provider: pembuatan technical alias `.invalid`, login, update password, penolakan password lama, login baru, hapus akun dan penolakan login setelah penghapusan (enam checkpoint keseluruhan; penghapusan dan pasca-penghapusan diuji sebagai langkah terpisah).
+- Kunci CLI dari `supabase status -o env` hanya digunakan di proses lokal; tidak boleh dibagikan ke chat atau GitHub.
+- CLI QA hanya menghentikan project sementara miliknya sendiri dengan `supabase stop --no-backup`, bukan proyek lokal lain.
+- CI Node serta parser PowerShell Windows sudah lulus. **Operator belum menjalankan QA Docker sungguhan; gate provider masih NOT RUN.**
+
+Production provisioning dan reset tetap dikunci; PR #6 Draft.
