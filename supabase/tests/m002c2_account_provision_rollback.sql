@@ -77,9 +77,15 @@ begin
  end;
  if not denied then raise exception 'QA_NONADMIN_ACTOR_ALLOWED';end if;
 
- if public.pg_m002c2_provision_result(actor,key)<>first_result
+ begin
+  perform public.pg_m002c2_provision_result(actor,key,'qa_teacher',
+   'qa-teacher@invalid.example','changed name','teacher');
+  raise exception 'QA_CHANGED_IDEMPOTENT_PAYLOAD_ACCEPTED';
+ exception when unique_violation then null;
+ end;
+ if public.pg_m002c2_provision_result(actor,key,'qa_teacher','qa-teacher@invalid.example','QA Teacher','teacher')<>first_result
  then raise exception 'QA_RETRY_LOOKUP_MISMATCH';end if;
- if public.pg_m002c2_provision_result(actor,gen_random_uuid()) is not null
+ if public.pg_m002c2_provision_result(actor,gen_random_uuid(),'qa_teacher','qa-teacher@invalid.example','QA Teacher','teacher') is not null
  then raise exception 'QA_UNKNOWN_KEY_MUST_BE_NULL';end if;
 
  if (select count(*) from public.audit_events where request_id='qa-create')<>1
@@ -87,7 +93,7 @@ begin
  if has_function_privilege('anon',
     'public.pg_m002c2_attach_account(uuid,uuid,text,text,text,public.app_role,uuid,text)','execute') or
     has_function_privilege('authenticated',
-    'public.pg_m002c2_provision_result(uuid,uuid)','execute') or
+    'public.pg_m002c2_provision_result(uuid,uuid,text,text,text,public.app_role)','execute') or
     not has_function_privilege('service_role',
     'public.pg_m002c2_provision_result(uuid,uuid)','execute')
  then raise exception 'QA_RPC_EXECUTE_LEAK';end if;
