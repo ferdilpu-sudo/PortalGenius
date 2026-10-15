@@ -1,0 +1,21 @@
+name: M002C preview security boundary
+on:
+  push:
+    branches: [feat/m002c-identity-students-assignments]
+    paths:
+      - '.github/workflows/m002c-preview-smoke.yml'
+      - 'scripts/m002c-preview-smoke.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  anonymous-endpoints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify preview Pages routes reject unauthenticated callers
+        run: node scripts/m002c-preview-smoke.mjs
