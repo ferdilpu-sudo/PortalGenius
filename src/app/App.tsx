@@ -24,5 +24,5 @@ export function App() {
   if (loading) return <main role="status" className="boot-message">Memeriksa sesi...</main>;
   if (!profile) return <LoginPage onLogin={session=>{setProfile(session.profile);setCsrf(session.csrf);}} />;
   if (profile.mustChangePassword) return <PasswordPage csrf={csrf} onComplete={()=>{setProfile(null);setCsrf('');}} onLogout={signOut} sessionError={error} />;
-  return <DashboardPage profile={profile} onLogout={signOut} sessionError={error} />;
+  return <DashboardPage profile={profile} csrf={csrf} onLogout={signOut} sessionError={error} />;
 }

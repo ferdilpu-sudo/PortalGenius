@@ -1,0 +1,14 @@
+.academic-description{max-width:680px;color:var(--muted);line-height:1.7;}
+.academic-layout{display:grid;grid-template-columns:minmax(280px,390px) minmax(300px,1fr);gap:22px;align-items:start;margin-top:30px;}
+.academic-layout .welcome-panel{margin-top:0;padding:28px;}
+.academic-layout h2{font-size:20px;letter-spacing:-.5px;margin-bottom:25px;}
+.academic-form-panel .field{margin-bottom:15px;}
+.academic-form-panel .primary-button{margin-top:20px;}
+.academic-helper{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:0;}
+.academic-empty{color:var(--muted);line-height:1.7;}
+.academic-list{padding:0;list-style:none;margin:0;}
+.academic-list li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:17px 0;border-bottom:1px solid var(--border);}
+.academic-list li:last-child{border-bottom:0;}
+.academic-list strong{font-size:15px;}
+.academic-list span{font-size:13px;color:var(--muted);}
+@media(max-width:900px){.academic-layout{grid-template-columns:1fr;}}

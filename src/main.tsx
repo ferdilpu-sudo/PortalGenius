@@ -5,4 +5,5 @@ import './shared/styles/tokens.css';
 import './shared/styles/global.css';
 import './features/auth/auth.css';
 import './features/dashboard/dashboard.css';
+import './features/academicYears/academicYears.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
