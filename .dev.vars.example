@@ -1,0 +1,10 @@
+# Set real values ONLY in secrets settings. Never commit credentials.
+SUPABASE_URL=https://vpglikrkvsnoyjvluigs.supabase.co
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SESSION_ENCRYPTION_KEY=
+SESSION_KEY_VERSION=1
+AUTH_ADMIN_EMAIL=
+APP_ORIGIN=http://localhost:8788
+APP_ENV=local
+EXPECTED_SUPABASE_PROJECT_REF=vpglikrkvsnoyjvluigs

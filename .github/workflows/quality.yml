@@ -1,0 +1,47 @@
+name: Quality
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Block newly known high/critical dependency vulnerabilities
+        run: npm audit --audit-level=high --no-fund
+      - name: Verify source foundation
+        run: npm run preflight
+      - name: Verify operator script syntax
+        run: |
+          node --check scripts/bootstrap-admin.mjs
+          node --check scripts/hosted-smoke.mjs
+      - name: Validate public Pages bindings
+        run: node scripts/check-wrangler-config.mjs
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+  windows-bootstrap-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse Windows administrator bootstrap without secrets
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("scripts/bootstrap-admin.ps1", [ref]$tokens, [ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host "WINDOWS_BOOTSTRAP_SYNTAX_PASS"

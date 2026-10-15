@@ -1,9 +1,29 @@
 # PortalGenius
 
-Aplikasi administrasi akademik untuk SD, SMP, dan SMA dalam satu lembaga homeschooling.
+Aplikasi administrasi akademik internal satu lembaga homeschooling (SD, SMP, SMA).
 
-Status: fondasi M-001 sedang dikembangkan melalui pull request. Arsitektur React + TypeScript + Cloudflare Pages Functions + Supabase, login username/password, dengan isolasi akses berbasis peran.
+## Status proyek — 15 Oktober 2026
 
-**Keamanan:** jangan commit key rahasia, token, password, data siswa nyata, atau file `.dev.vars`.
+- **M-001 Fondasi dan autentikasi: CLOSED** (disetujui operator dengan pengecualian terdokumentasi). [Bukti closeout](docs/milestones/M001-closeout.md) · [ADR-009](decisions.md).
+- **M-002 Master Akademik dan Otorisasi:** berikutnya, belum dimulai. [Gate keamanan awal M-002](https://github.com/ferdilpu-sudo/PortalGenius/issues/2).
+- **Hosted staging:** https://portalgenius.pages.dev — login administrator, ganti password awal, logout, relogin sudah dilaporkan PASS oleh operator.
+- **Stack:** React/TypeScript/Vite, Cloudflare Pages Functions (BFF same-origin), Supabase Auth/Postgres dengan RLS, sesi cookie HttpOnly Secure.
+- **Lingkungan:** database khusus Supabase `vpglikrkvsnoyjvluigs`. Jangan menyentuh proyek LayarBelajar atau menyalin data lama.
 
-Dokumentasi lengkap, aplikasi, dan pengujian akan berada pada branch implementasi M-001 sampai lolos quality gates.
+## Pengembangan
+
+Gunakan Node.js 22+, lalu:
+
+```bash
+npm ci
+npm run preflight
+npm run typecheck
+npm test
+npm run build
+```
+
+GitHub CI juga melakukan `npm audit --audit-level=high` serta pemeriksaan sintaks bootstrap Windows. Tidak ada rahasia/identitas pengguna yang boleh masuk source, log, atau bundle. [Panduan Pages dan operator](docs/deployment/cloudflare-pages-m001.md).
+
+Untuk tahap M-002, jangan menganggap CI source code menggantikan tes negatif RLS dan hosted E2E. [Pedoman agent](AGENTS.md), [arsitektur](architecture.md), [rencana](plan.md), [strategi tes](testing.md).
+
+**Keamanan:** layanan Supabase saat ini belum mengaktifkan fitur Leaked Password Protection karena pembatasan paket sebagaimana disampaikan operator; temuan advisor dicatat sebagai risiko yang diterima. Uji refresh paralel, replay cookie HTTP, dan formal lint adalah pekerjaan tertunda dengan pelacakan di issue #2. Tidak ada klaim seluruh sistem atau modul M-002..M-007 siap produksi.
