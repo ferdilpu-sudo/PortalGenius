@@ -5,7 +5,7 @@ do $qa$
 declare
  operator_id uuid;
  staff_id uuid:=gen_random_uuid();
- alias text:='qa-'+pg_catalog.replace(gen_random_uuid()::text,'-','')||'@auth.portalgenius.invalid';
+ alias text:='qa-'||pg_catalog.replace(gen_random_uuid()::text,'-','')||'@auth.portalgenius.invalid';
  handle text:=md5(gen_random_uuid()::text)||md5(gen_random_uuid()::text);
  op uuid:=gen_random_uuid();
  other_op uuid:=gen_random_uuid();
