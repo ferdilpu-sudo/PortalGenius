@@ -74,10 +74,13 @@ begin
 end;
 $fn$;
 
-create function public.pg_m002c2_provision_result(p_actor_id uuid,p_idempotency_key uuid)
+create function public.pg_m002c2_provision_result(
+ p_actor_id uuid,p_idempotency_key uuid,p_username text,p_auth_alias text,
+ p_display_name text,p_role public.app_role)
 returns jsonb language plpgsql stable security definer set search_path=''
 as $fn$
-declare v_result jsonb;
+declare
+ v_saved private.master_idempotency%rowtype;
 begin
  if not exists(select 1 from public.accounts a
   join public.account_roles r on r.account_id=a.auth_user_id
@@ -86,18 +89,25 @@ begin
  then raise exception 'ACCESS_DENIED' using errcode='42501'; end if;
  if p_idempotency_key is null then
   raise exception 'INVALID_IDEMPOTENCY_KEY' using errcode='22023'; end if;
- select r.result into v_result from private.master_idempotency r
+ select * into v_saved from private.master_idempotency r
  where r.actor_id=p_actor_id and r.operation='account.provision'
  and r.request_key=p_idempotency_key;
- return v_result;
+ if not found then return null;end if;
+ if p_username is null or p_auth_alias is null or p_display_name is null or p_role is null
+  or v_saved.payload->>'username' is distinct from pg_catalog.lower(pg_catalog.btrim(p_username))
+  or v_saved.payload->>'alias' is distinct from pg_catalog.lower(pg_catalog.btrim(p_auth_alias))
+  or v_saved.payload->>'displayName' is distinct from pg_catalog.btrim(p_display_name)
+  or v_saved.payload->>'role' is distinct from p_role::text
+ then raise exception 'IDEMPOTENCY_CONFLICT' using errcode='23505'; end if;
+ return v_saved.result;
 end;
 $fn$;
 
 revoke all on function
  public.pg_m002c2_attach_account(uuid,uuid,text,text,text,public.app_role,uuid,text),
- public.pg_m002c2_provision_result(uuid,uuid)
+ public.pg_m002c2_provision_result(uuid,uuid,text,text,text,public.app_role)
 from public,anon,authenticated;
 grant execute on function
  public.pg_m002c2_attach_account(uuid,uuid,text,text,text,public.app_role,uuid,text),
- public.pg_m002c2_provision_result(uuid,uuid)
+ public.pg_m002c2_provision_result(uuid,uuid,text,text,text,public.app_role)
 to service_role;

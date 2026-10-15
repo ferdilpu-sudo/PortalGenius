@@ -14,7 +14,7 @@ export async function provisionAccount(
  gateway:ProvisionGateway,actorId:string,key:string,requestId:string,
  request:ProvisionRequest
 ):Promise<ProvisionResult>{
- const existing=await gateway.readResult(actorId,key);
+ const existing=await gateway.readResult(actorId,key,request);
  if(existing)return {account:existing,temporaryPassword:null,alreadyCompleted:true};
 
  const password=newTemporaryPassword();
@@ -27,7 +27,7 @@ export async function provisionAccount(
   // A transport error could mean the atomic bind committed, so consult its
   // idempotency journal before deciding whether an Auth identity is orphaned.
   let completed:AccountProvisionSummary|null;
-  try{completed=await gateway.readResult(actorId,key);}
+  try{completed=await gateway.readResult(actorId,key,request);}
   catch{throw new Error('PROVISION_RECONCILIATION_REQUIRED');}
   if(completed?.id===newId){
    return {account:completed,temporaryPassword:password,alreadyCompleted:false};

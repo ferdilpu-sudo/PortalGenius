@@ -6,7 +6,7 @@ export type AccountProvisionSummary={
  active:true;mustChangePassword:true
 };
 export type ProvisionGateway={
- readResult:(actorId:string,key:string)=>Promise<AccountProvisionSummary|null>;
+ readResult:(actorId:string,key:string,request:ProvisionRequest)=>Promise<AccountProvisionSummary|null>;
  createAuth:(email:string,password:string)=>Promise<string>;
  bindAccount:(actorId:string,userId:string,request:ProvisionRequest,key:string,
   requestId:string)=>Promise<AccountProvisionSummary>;
@@ -14,11 +14,13 @@ export type ProvisionGateway={
 };
 export function provisionGateway(client:SupabaseClient):ProvisionGateway{
  return {
-  async readResult(actorId,key){
+  async readResult(actorId,key,request){
    const {data,error}=await client.rpc('pg_m002c2_provision_result',{
-    p_actor_id:actorId,p_idempotency_key:key
+    p_actor_id:actorId,p_idempotency_key:key,
+    p_username:request.username,p_auth_alias:request.authEmail,
+    p_display_name:request.displayName,p_role:request.role
    });
-   if(error)throw new Error(error.code==='42501'?'FORBIDDEN':'PROVISION_LOOKUP_UNAVAILABLE');
+   if(error)throw new Error(error.code==='42501'?'FORBIDDEN':error.code==='23505'?'PROVISION_CONFLICT':'PROVISION_LOOKUP_UNAVAILABLE');
    if(data===null)return null;
    if(typeof data?.id!=='string')throw new Error('PROVISION_LOOKUP_UNAVAILABLE');
    return data as AccountProvisionSummary;

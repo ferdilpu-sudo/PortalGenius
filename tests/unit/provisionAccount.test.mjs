@@ -79,3 +79,14 @@ test('auth failure does not call DB bind or cleanup unrelated identities',async(
  };
  await assert.rejects(provisionAccount(gateway,'admin','key','req',valid),/AUTH_PROVISION_FAILED/);
 });
+
+test('idempotency lookup receives full payload, not just the key',async()=>{
+ let readPayload;
+ const gateway={
+  readResult:async(actor,key,request)=>{readPayload=request;return result;},
+  createAuth:async()=>{throw Error('unexpected auth call');},
+  bindAccount:async()=>{throw Error('unexpected bind');},deleteAuth:async()=>false
+ };
+ await provisionAccount(gateway,'admin','key','req',valid);
+ assert.deepEqual(readPayload,valid);
+});
