@@ -9,3 +9,9 @@ Source implementasi fondasi dan autentikasi sedang diverifikasi. Supabase dedica
 Untuk pengembangan lokal: Node 22+, `npm ci`, `npm run dev` untuk UI, lalu `npm run build` dan `npx wrangler pages dev dist` untuk API. Atur rahasia pada `.dev.vars` atau pengaturan secret Cloudflare dari contoh. Jangan mengirim secret ke repository.
 
 **Belum untuk produksi:** akun admin awal dan secrets Cloudflare belum dikonfigurasi, browser/hosted login QA belum selesai. Setiap perbaikan harus melalui PR dan quality gate sebelum merge.
+
+## Deploy staging M-001
+
+Ikuti [runbook Cloudflare Pages](docs/deployment/cloudflare-pages-m001.md). URL deployment dan secret Cloudflare belum disiapkan. Untuk smoke hosted setelah konfigurasi jalankan `node scripts/hosted-smoke.mjs https://YOUR-STAGING.pages.dev`. Untuk bootstrap admin satu kali gunakan `node --env-file=.dev.vars scripts/bootstrap-admin.mjs` di terminal lokal operator tepercaya.
+
+Semua API bisnis baru M-002 harus memakai otorisasi sesuai JWT pemanggil/penugasan; jangan melakukan akses bisnis melalui klien `service_role` tanpa periksa izin resource.

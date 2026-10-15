@@ -16,6 +16,12 @@ jobs:
           cache: npm
       - name: Install exact locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Verify source foundation
+        run: npm run preflight
+      - name: Verify operator script syntax
+        run: |
+          node --check scripts/bootstrap-admin.mjs
+          node --check scripts/hosted-smoke.mjs
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build

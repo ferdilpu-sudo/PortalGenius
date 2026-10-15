@@ -2,7 +2,7 @@
 
 # PortalGenius — Rencana Pengujian
 
-Status 15 Oktober 2026: 25 tes unit native Node dan 2 kontrak API lokal PASS pada scaffold M-001. Suite TEST-001 penuh, browser, hosted, RLS, lint, build, dan TEST-002..014 masih NOT RUN. Pemeriksaan paket dokumen berbeda dari tes aplikasi. Dua smoke yang pernah dijalankan pada ZIP jurnal lama tidak menjadi bukti kualitas aplikasi baru.
+Status 15 Oktober 2026: implementasi baru pada PR #1 memiliki 10 tes unit PASS di GitHub Actions, npm ci/typecheck/build PASS; tiga migrasi Supabase dan pemeriksaan izin fungsi/negative bootstrap PASS. TEST-001 hosted, uji browser, negative RLS lintas pengguna, lint formatter formal, dan TEST-002..014 masih NOT RUN. Angka 25+2 dari prototipe lokal sebelumnya bukan hasil suite CI repository ini. Pemeriksaan paket dokumen berbeda dari tes aplikasi. Dua smoke yang pernah dijalankan pada ZIP jurnal lama tidak menjadi bukti kualitas aplikasi baru.
 
 ## Strategi
 Unit Vitest pada aturan nilai, kategori kehadiran dan transisi status. Integration pada Postgres/RLS, Auth/BFF dan transaksi menggunakan lingkungan uji. UI Testing Library untuk interaksi form. Playwright untuk perjalanan utama; axe-core ditambah pengujian manual keyboard, zoom dan screen reader. Mocks untuk gangguan layanan, bukan pengganti uji RLS dengan role sebenarnya.

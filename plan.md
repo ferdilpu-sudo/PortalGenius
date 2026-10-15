@@ -43,7 +43,7 @@ M-002: semester/year -> master -> enrollment -> assignment -> akun dan reset -> 
 ## Tracker
 | Milestone | Status | Bukti |
 |---|---|---|
-| M-001 | In progress | Source React/Pages/Auth scaffold + 25 unit dan 2 kontrak API lokal PASS; npm/build/hosted auth/SQL/RLS NOT RUN. Lihat IMPLEMENTATION-STATUS.md. |
+| M-001 | In progress | PR #1: 10 tes unit baru PASS; npm ci/typecheck/build PASS; 3 migrasi Supabase diterapkan dan uji izin/RLS schema PASS; hosted auth, browser, bootstrap admin nyata masih NOT RUN. Lihat M001-STATUS.md. |
 | M-002 | Not started | Menunggu fondasi |
 | M-003 | Not started | Menunggu master dan assignment |
 | M-004 | Not started | Menunggu model akademik |
