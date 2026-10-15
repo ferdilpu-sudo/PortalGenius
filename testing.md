@@ -1,8 +1,12 @@
-> Catatan status 15 Oktober 2026: migrasi Supabase M-001 telah diterapkan; GitHub PR #1 dan CI tersedia. Hosted login, lockfile, dan deployment masih menjadi gate terbuka. Rincian terkini ada di `M001-STATUS.md`.
+> **Status verifikasi 15 Oktober 2026:** Fondasi M-001 diterima dan ditutup dengan pengecualian terdokumentasi. Rujuk [M001 closeout](docs/milestones/M001-closeout.md), [ADR-009](decisions.md), dan [M-002 security carry-forward](https://github.com/ferdilpu-sudo/PortalGenius/issues/2).
 
 # PortalGenius — Rencana Pengujian
 
-Status 15 Oktober 2026: implementasi baru pada PR #1 memiliki 10 tes unit PASS di GitHub Actions, npm ci/typecheck/build PASS; tiga migrasi Supabase dan pemeriksaan izin fungsi/negative bootstrap PASS. TEST-001 hosted, uji browser, negative RLS lintas pengguna, lint formatter formal, dan TEST-002..014 masih NOT RUN. Angka 25+2 dari prototipe lokal sebelumnya bukan hasil suite CI repository ini. Pemeriksaan paket dokumen berbeda dari tes aplikasi. Dua smoke yang pernah dijalankan pada ZIP jurnal lama tidak menjadi bukti kualitas aplikasi baru.
+Status 15 Oktober 2026: GitHub Quality CI terakhir **12/12 unit PASS, npm audit 0, typecheck/build PASS**. Hosted API smoke **4/4 PASS**, operator mengonfirmasi bootstrap, wajib ganti password, logout dan login ulang; DB menegaskan akun admin aktif dan sesi lama dicabut. Read-only SQL mengonfirmasi dua sesi revoked tidak dapat dibaca melalui RPC. **NOT RUN:** uji browser replay cookie asli/sintetis, refresh paralel, lint formal, multi-role negatif RLS (M-002). Semua pengecualian dicatat dengan owner dan gate pada issue #2. Angka unit dari prototipe ZIP sebelumnya tidak dipakai sebagai bukti CI ini.
+
+## Catatan TEST-001 M-001
+
+TEST-001 **PARTIAL PASS, operator-accepted exception**: login, rotasi password, logout dan relogin telah terbukti. Replay cookie pada HTTP dan refresh paralel belum diuji. Uji lanjut diwajibkan sebelum provisioning multi-pengguna pada M-002; penutupan M-001 tidak mengubah status subtes NOT RUN.
 
 ## Strategi
 Unit Vitest pada aturan nilai, kategori kehadiran dan transisi status. Integration pada Postgres/RLS, Auth/BFF dan transaksi menggunakan lingkungan uji. UI Testing Library untuk interaksi form. Playwright untuk perjalanan utama; axe-core ditambah pengujian manual keyboard, zoom dan screen reader. Mocks untuk gangguan layanan, bukan pengganti uji RLS dengan role sebenarnya.

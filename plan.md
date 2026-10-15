@@ -1,8 +1,8 @@
-> Catatan status 15 Oktober 2026: migrasi Supabase M-001 telah diterapkan; GitHub PR #1 dan CI tersedia. Hosted login, lockfile, dan deployment masih menjadi gate terbuka. Rincian terkini ada di `M001-STATUS.md`.
+> **Checkpoint 15 Oktober 2026:** M-001 ditutup atas persetujuan operator, dengan pengecualian keamanan yang didokumentasikan di [closeout](docs/milestones/M001-closeout.md) dan [ADR-009](decisions.md). Pengujian lanjutan wajib dituntaskan sebelum M-002 memperluas akun/role.
 
 # PortalGenius — Rencana Implementasi
 
-Status implementasi 15 Oktober 2026: M-001 IN PROGRESS (belum Verified); M-002 s.d. M-007 Not started. Paket dokumen selesai bukan berarti M-001 selesai. Implementasi dimulai setelah tugas coding diberikan. Satu increment kecil dengan perilaku yang dapat diperiksa, tidak membuat seluruh modul sekaligus.
+Status implementasi 15 Oktober 2026: **M-001 CLOSED (operator-accepted, documented exceptions)**; M-002 hingga M-007 Not started. Penutupan berarti fondasi telah diterima dan diintegrasikan, bukan bahwa semua pengujian keamanan mendatang sudah dijalankan.
 
 ## Milestone
 | ID | Tujuan/dependensi | Deliverable | REQ | Gate keluar |
@@ -29,6 +29,10 @@ Audit events dibangun sejak mutation pertama M-001/M-002, bukan baru M-007. Seti
 
 Urutan TASK-001 -> TASK-002 -> TASK-003/004 sesuai dependensi kontrak -> TASK-005 -> TASK-006. Tidak menyimpan kredensial nyata dalam dokumen atau commit. Jika provider/akun belum siap, tandai hosted auth NOT RUN; lanjutkan unit/synthetic UI yang independen, jangan menyebut M-001 Verified.
 
+## Penyelesaian dan dependensi
+
+Tidak ada penundaan M-001 yang diklaim PASS. Pada awal M-002, tangani issue [#2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2) untuk refresh paralel, replay cookie HTTP, lint/format formal, dan perlindungan akses sebelum provisioning multi-peran. Leaked Password Protection khusus tier berbayar diterima sebagai risiko terpisah, tidak mengubah klaim fitur keamanan yang tersedia.
+
 ## Rincian increment berikutnya
 M-002: semester/year -> master -> enrollment -> assignment -> akun dan reset -> proyeksi/RLS. Validasi archival/last-admin rule. M-003: session DTO -> transaksi -> wizard -> history/conflict -> rekap, validasi OPEN-002. M-004: policy draft/activate -> assessment -> score editor -> missing components -> perhitungan authoritative. M-005: assignment konselor -> rubric -> public/private notes -> completion. M-006: selector -> deterministic report projection -> source revision -> finalize -> revision -> PDF sections -> XLSX -> role dashboard. M-007: recovery/operator -> responsive/a11y -> realistic load -> pilot -> deployment final.
 
@@ -43,7 +47,7 @@ M-002: semester/year -> master -> enrollment -> assignment -> akun dan reset -> 
 ## Tracker
 | Milestone | Status | Bukti |
 |---|---|---|
-| M-001 | In progress | PR #1: 10 tes unit baru PASS; npm ci/typecheck/build PASS; 3 migrasi Supabase diterapkan dan uji izin/RLS schema PASS; hosted auth, browser, bootstrap admin nyata masih NOT RUN. Lihat M001-STATUS.md. |
+| M-001 | **Closed — accepted exceptions** | CI 12/12 unit PASS, npm audit 0, typecheck/build PASS; tiga migrasi, hosted API 4/4, admin bootstrap/login/password/logout/relogin PASS; sesi revoked ditolak SQL. Lihat [M001 closeout](docs/milestones/M001-closeout.md). Deferred: [#2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2). |
 | M-002 | Not started | Menunggu fondasi |
 | M-003 | Not started | Menunggu master dan assignment |
 | M-004 | Not started | Menunggu model akademik |

@@ -62,3 +62,15 @@ Diperiksa 14 Oktober 2026 untuk kemampuan platform dasar, bukan jaminan versi pa
 Changelog ringkas Supabase gagal diambil dalam sesi penyusunan; coding agent wajib memeriksa changelog resmi dan API SDK saat M-001. Tidak ada klaim semua versi/library terbaru telah diaudit.
 
 [Arsitektur](./architecture.md) · [PRD](./prd.md)
+
+## ADR-009 — Penutupan M-001 dan pengecualian keamanan terbatas (15 Oktober 2026)
+
+**Status: Accepted by operator.** Operator menyatakan fitur Supabase *Leaked Password Protection* memerlukan paket Pro dan secara eksplisit menyetujui penutupan M-001 tanpa upgrade paket pada saat ini. Security Advisor masih memberi temuan WARN `auth_leaked_password_protection`; fitur **tidak diaktifkan dan tidak dianggap PASS**.
+
+**Kontrol yang tersedia:** password minimum 12 karakter pada alur PortalGenius, validasi password berbeda, Supabase Auth mengelola hash/kredensial, pembatasan upaya login 8/15 menit per username serta batas IP, cookie HttpOnly/Secure, Origin/CSRF, RLS deny-by-default, sesi opaque/enkripsi, session revocation, dan audit provisioning. Kontrol ini mengurangi risiko tetapi **tidak setara dengan pemeriksaan daftar password bocor**.
+
+**Bukti penerimaan fondasi:** GitHub Quality CI dengan npm audit 0, typecheck/build, 12 unit PASS; hosted API smoke 4/4; operator mengonfirmasi login, wajib ganti password, logout dan login ulang; SQL read-only 1 admin aktif dan 2 sesi revoked, RPC sesi revoked tidak membacanya. Lihat [closeout M-001](docs/milestones/M001-closeout.md).
+
+**Pengecualian terpisah yang tidak boleh disembunyikan:** replay cookie melalui HTTP dan refresh paralel secara nyata belum dieksekusi; lint/format formal masih belum ada. Diperlukan sebagai gate awal M-002 dalam [issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2), sebelum provisioning banyak akun. Pengujian lintas role RLS menyusul ketika tabel M-002 tersedia. Ini bukan hasil PASS yang tertunda pelaporannya, tetapi tes yang **belum dilakukan**.
+
+**Pilihan:** tidak membayar paket Pro semata untuk menutup milestone fondasi, tidak memalsukan hasil Security Advisor, dan tidak menghapus pembatasan autentikasi yang ada. Evaluasi upgrade/mitigasi proteksi password pada peninjauan keamanan berikutnya atau sebelum ekspansi penggunaan. Keputusan ini tidak menyatakan kesiapan untuk penyimpanan data siswa nyata maupun rilis M-007.

@@ -1,21 +1,29 @@
 # PortalGenius
 
-Sistem administrasi akademik internal homeschooling jenjang SD, SMP, dan SMA.
+Aplikasi administrasi akademik internal satu lembaga homeschooling (SD, SMP, SMA).
 
-## Status — M-001
+## Status proyek — 15 Oktober 2026
 
-Source implementasi fondasi dan autentikasi sedang diverifikasi. Supabase dedicated project: `vpglikrkvsnoyjvluigs`; migrasi SQL `20261015052905_portalgenius_m001_identity_session_foundation` telah diterapkan, tabel aplikasi tetap kosong. Frontend React/TypeScript dengan backend Cloudflare Pages Functions, tanpa password/email pengguna ditampilkan pada UI.
+- **M-001 Fondasi dan autentikasi: CLOSED** (disetujui operator dengan pengecualian terdokumentasi). [Bukti closeout](docs/milestones/M001-closeout.md) · [ADR-009](decisions.md).
+- **M-002 Master Akademik dan Otorisasi:** berikutnya, belum dimulai. [Gate keamanan awal M-002](https://github.com/ferdilpu-sudo/PortalGenius/issues/2).
+- **Hosted staging:** https://portalgenius.pages.dev — login administrator, ganti password awal, logout, relogin sudah dilaporkan PASS oleh operator.
+- **Stack:** React/TypeScript/Vite, Cloudflare Pages Functions (BFF same-origin), Supabase Auth/Postgres dengan RLS, sesi cookie HttpOnly Secure.
+- **Lingkungan:** database khusus Supabase `vpglikrkvsnoyjvluigs`. Jangan menyentuh proyek LayarBelajar atau menyalin data lama.
 
-Untuk pengembangan lokal: Node 22+, `npm ci`, `npm run dev` untuk UI, lalu `npm run build` dan `npx wrangler pages dev dist` untuk API. Atur rahasia pada `.dev.vars` atau pengaturan secret Cloudflare dari contoh. Jangan mengirim secret ke repository.
+## Pengembangan
 
-**Belum untuk produksi:** akun admin awal dan secrets Cloudflare belum dikonfigurasi, browser/hosted login QA belum selesai. Setiap perbaikan harus melalui PR dan quality gate sebelum merge.
+Gunakan Node.js 22+, lalu:
 
-## Deploy staging M-001
+```bash
+npm ci
+npm run preflight
+npm run typecheck
+npm test
+npm run build
+```
 
-Ikuti [runbook Cloudflare Pages](docs/deployment/cloudflare-pages-m001.md). URL deployment dan secret Cloudflare belum disiapkan. Untuk smoke hosted setelah konfigurasi jalankan `node scripts/hosted-smoke.mjs https://YOUR-STAGING.pages.dev`. Untuk bootstrap admin satu kali gunakan `node --env-file=.dev.vars scripts/bootstrap-admin.mjs` di terminal lokal operator tepercaya.
+GitHub CI juga melakukan `npm audit --audit-level=high` serta pemeriksaan sintaks bootstrap Windows. Tidak ada rahasia/identitas pengguna yang boleh masuk source, log, atau bundle. [Panduan Pages dan operator](docs/deployment/cloudflare-pages-m001.md).
 
-Semua API bisnis baru M-002 harus memakai otorisasi sesuai JWT pemanggil/penugasan; jangan melakukan akses bisnis melalui klien `service_role` tanpa periksa izin resource.
+Untuk tahap M-002, jangan menganggap CI source code menggantikan tes negatif RLS dan hosted E2E. [Pedoman agent](AGENTS.md), [arsitektur](architecture.md), [rencana](plan.md), [strategi tes](testing.md).
 
-Untuk operator Windows, gunakan `powershell -NoProfile -File .\\scripts\\bootstrap-admin.ps1` setelah `npm ci`; helper meminta secret Supabase melalui input tersembunyi. Lihat runbook Cloudflare untuk langkah terperinci.
-
-Bootstrap administrator pertama meminta alamat email operator yang dimiliki sendiri dan Supabase Secret API Key secara tersembunyi. Username dan password tetap merupakan satu-satunya input login aplikasi.
+**Keamanan:** layanan Supabase saat ini belum mengaktifkan fitur Leaked Password Protection karena pembatasan paket sebagaimana disampaikan operator; temuan advisor dicatat sebagai risiko yang diterima. Uji refresh paralel, replay cookie HTTP, dan formal lint adalah pekerjaan tertunda dengan pelacakan di issue #2. Tidak ada klaim seluruh sistem atau modul M-002..M-007 siap produksi.
