@@ -39,3 +39,15 @@ Target Cloudflare production branch: `main`
 5. Lint dan format formal (CI saat ini mengandalkan TypeScript, unit, dependency audit, bukan ESLint).
 
 Catatan: SQL transaksi sintetis dijalankan dengan rollback; katalog dan sesi di luar transaksi tidak dimodifikasi.
+
+## Cloudflare Pages preview verification
+
+Cloudflare bot identified preview URL https://feat-m002-security-master-fo.portalgenius.pages.dev for PR #3.
+GitHub Actions: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38730497319 — **PASS 4/4**.
+
+- HTML page: 200 PASS.
+- API health: 200 PASS.
+- GET `/api/v1/academic-years` without cookie: 401 PASS.
+- Unknown API path: 404 PASS.
+
+No authenticated admin mutation on preview was executed. Browser master-data write/refresh-concurrency remain NOT RUN. The Preview environment may require independent secret configuration; never copy values into source. This checkpoint is appropriate for an incremental integration but **does not close M-002**.
