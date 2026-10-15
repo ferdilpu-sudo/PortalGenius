@@ -1,3 +1,15 @@
+# PortalGenius Pages production binding configuration.
+# Only public, non-secret values are permitted in this file.
+# SUPABASE_SECRET_KEY and SESSION_ENCRYPTION_KEY must be saved as encrypted
+# Secrets in Cloudflare Pages > Settings > Variables and secrets > Production.
 name = "portalgenius"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-10-14"
+
+[vars]
+SUPABASE_URL = "https://vpglikrkvsnoyjvluigs.supabase.co"
+EXPECTED_SUPABASE_PROJECT_REF = "vpglikrkvsnoyjvluigs"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cy4a8SZIEECJ08nTu_ox3w_LUi1ZiA_"
+SESSION_KEY_VERSION = "1"
+APP_ENV = "staging"
+APP_ORIGIN = "https://portalgenius.pages.dev"

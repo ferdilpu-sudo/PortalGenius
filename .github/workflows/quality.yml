@@ -22,6 +22,8 @@ jobs:
         run: |
           node --check scripts/bootstrap-admin.mjs
           node --check scripts/hosted-smoke.mjs
+      - name: Validate public Pages bindings
+        run: node scripts/check-wrangler-config.mjs
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
