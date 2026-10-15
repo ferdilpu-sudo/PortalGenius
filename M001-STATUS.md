@@ -61,3 +61,13 @@ Supabase read-only check: 0 accounts, 0 login identities, 0 assigned roles. Host
 - Source and Windows PowerShell parse verification: PASS at https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38706722096.
 - CI now blocks high/critical findings by running `npm audit --audit-level=high`.
 - User must `git pull` and `npm ci` in their existing local checkout before retrying bootstrap.
+
+## Checkpoint 15 Oktober 2026 — login lifecycle pengguna
+
+- Pengguna melaporkan administrator pertama berhasil dibuat dan penggantian password wajib berhasil.
+- Pengguna mengonfirmasi logout dan login ulang memakai password baru: PASS (uji browser manual).
+- Verifikasi SQL read-only: 1 akun administrator aktif yang tidak lagi wajib mengganti password, 2 sesi berstatus revoked, 1 sesi eligible dan 1 audit bootstrap.
+- GitHub Quality CI pada commit c6ae761 PASS: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38706934538.
+- Catatan milestone: pemeriksaan refresh sesi paralel dan penolakan replay cookie secara langsung masih NOT RUN. Pengujian multi-role baru dilakukan pada M-002.
+- Security Advisor memberi WARN untuk Leaked Password Protection yang belum aktif; operator perlu mengaktifkannya bila tersedia.
+- PR #1 tetap Draft sampai gate tersisa diperiksa; belum merge ke main.
