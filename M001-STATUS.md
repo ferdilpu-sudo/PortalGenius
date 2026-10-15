@@ -25,3 +25,19 @@ Workflow: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38697975557
 - Perbaikan: `AUTH_ALIAS_DOMAIN` dijadikan opsional pada runtime karena hanya dipakai untuk operator bootstrap.
 - Tindakan operator: atur variables & encrypted secrets pada **Production** environment proyek Pages (untuk `portalgenius.pages.dev`), deploy ulang, jalankan workflow *Hosted staging smoke* secara manual. Jangan menempelkan secret pada issue/chat/log.
 - Hosted TEST-001 tetap OPEN; tidak ada akun admin nyata.
+
+
+## Hosted verification update — 15 October 2026
+
+GitHub Actions hosted smoke run: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38697975557 (attempt 3, PASS).
+
+Target: https://portalgenius.pages.dev
+
+| Test | Observed | Result |
+| --- | --- | --- |
+| GET /api/v1/health | 200 | PASS |
+| GET /api/v1/auth/session without cookie | 401 | PASS |
+| POST /api/v1/auth/login with foreign Origin | 403 | PASS |
+| POST /api/v1/auth/login with nonexistent synthetic username | 401 | PASS |
+
+Supabase read-only check: 0 accounts, 0 login identities, 0 assigned roles. Hosted login with a real administrator, forced password change, refresh concurrency, logout replay, and full negative-RLS TEST-001 remain NOT RUN. No student data or credentials were used in this smoke check. M-001 remains IN PROGRESS and PR #1 remains draft.
