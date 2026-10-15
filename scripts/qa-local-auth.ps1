@@ -42,9 +42,20 @@ try {
     if (-not (Test-Path (Join-Path $repositoryRoot 'node_modules\@supabase\supabase-js'))) {
         throw 'LOCAL_QA_RUN_NPM_CI_FIRST'
     }
-    & docker info --format '{{.ServerVersion}}' 1>$null 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw 'LOCAL_QA_DOCKER_DESKTOP_NOT_RUNNING'
+    # Windows PowerShell 5.1 can convert native stderr into a terminating
+    # error when ErrorActionPreference=Stop. Handle it as a preflight failure.
+    $dockerOS = $null
+    try {
+        $dockerOS = & docker info --format '{{.OSType}}' 2>$null
+        if ($LASTEXITCODE -ne 0) { $dockerOS = $null }
+    } catch {
+        $dockerOS = $null
+    }
+    if (-not $dockerOS) {
+        throw 'LOCAL_QA_DOCKER_DESKTOP_NOT_RUNNING: Buka Docker Desktop, tunggu Engine running, gunakan Linux containers, lalu jalankan ulang.'
+    }
+    if ([string]$dockerOS -ne 'linux') {
+        throw 'LOCAL_QA_LINUX_CONTAINERS_REQUIRED: Alihkan Docker Desktop ke Linux containers.'
     }
     # Never inherit hosted Supabase credentials into the local CLI/probe.
     @('SUPABASE_ACCESS_TOKEN','SUPABASE_URL','SUPABASE_SECRET_KEY',
