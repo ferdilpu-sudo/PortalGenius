@@ -28,7 +28,7 @@ const checks=[
 let passed=0;
 for(const check of checks){
  let status='unavailable',ok=false;
- for(let attempt=0;attempt<5&&!ok;attempt++){
+ for(let attempt=0;attempt<2&&!ok;attempt++){
   try{
    const response=await fetch(origin+check.path,{redirect:'manual',
     signal:AbortSignal.timeout(10000),
@@ -37,7 +37,7 @@ for(const check of checks){
    status=response.status;
    ok=response.status===check.status&&await check.test(response);
   }catch{ok=false;}
-  if(!ok&&attempt<4)await new Promise(resolve=>setTimeout(resolve,5000));
+  if(!ok&&attempt<1)await new Promise(resolve=>setTimeout(resolve,5000));
  }
  console.log((ok?'PASS':'BLOCKED')+' M002B preview '+check.name+
   ': HTTP '+status+' expected '+check.status);
