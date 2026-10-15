@@ -12,6 +12,12 @@ const checks=[
   body:'{}',ok:async r=>(await r.json()).error?.code==='ORIGIN_DENIED'},
  {name:'provision no-cookie denied',path:'/api/v1/accounts/create',status:401,
   method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},
+  body:'{}',ok:async r=>(await r.json()).error?.code==='NOT_AUTHENTICATED'},
+ {name:'staff reset hostile Origin denied',path:'/api/v1/accounts/reset-password',status:403,
+  method:'POST',headers:{Origin:'https://attacker.invalid','Content-Type':'application/json'},
+  body:'{}',ok:async r=>(await r.json()).error?.code==='ORIGIN_DENIED'},
+ {name:'staff reset without cookie denied',path:'/api/v1/accounts/reset-password',status:401,
+  method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},
   body:'{}',ok:async r=>(await r.json()).error?.code==='NOT_AUTHENTICATED'}
 ];
 let pass=0;
