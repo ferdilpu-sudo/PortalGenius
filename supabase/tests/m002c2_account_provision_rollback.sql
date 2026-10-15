@@ -95,7 +95,7 @@ begin
     has_function_privilege('authenticated',
     'public.pg_m002c2_provision_result(uuid,uuid,text,text,text,public.app_role)','execute') or
     not has_function_privilege('service_role',
-    'public.pg_m002c2_provision_result(uuid,uuid)','execute')
+    'public.pg_m002c2_provision_result(uuid,uuid,text,text,text,public.app_role)','execute')
  then raise exception 'QA_RPC_EXECUTE_LEAK';end if;
 
  raise notice 'M002C2_PROVISIONING_ROLLBACK_PASS';
