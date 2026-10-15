@@ -28,7 +28,7 @@ Masukkan dalam environment yang benar (staging atau production), **sebelum deplo
 | `SESSION_KEY_VERSION` | variable | `1` |
 | `APP_ENV` | variable | `staging` |
 | `APP_ORIGIN` | variable | origin HTTPS dari **URL Pages aktual**, tanpa slash akhir |
-| `AUTH_ALIAS_DOMAIN` | variable | domain email alias internal yang sudah disiapkan pengelola; tidak dipakai sebagai login pengguna |
+| `AUTH_ALIAS_DOMAIN` | variable (bootstrap only) | domain email alias internal untuk provisioning admin di terminal lokal; **tidak wajib untuk runtime Pages** |
 
 Untuk menghasilkan session encryption key secara lokal pada Windows PowerShell, dengan Node.js terpasang:
 
