@@ -28,7 +28,7 @@ Masukkan pada **Production environment** untuk hostname utama `https://portalgen
 | `SESSION_KEY_VERSION` | variable | `1` |
 | `APP_ENV` | variable | `staging` |
 | `APP_ORIGIN` | variable | origin HTTPS dari **URL Pages aktual**, tanpa slash akhir |
-| `AUTH_ALIAS_DOMAIN` | variable (bootstrap only) | domain email alias internal untuk provisioning admin di terminal lokal; **tidak wajib untuk runtime Pages** |
+| `AUTH_ADMIN_EMAIL` | hanya lokal bootstrap | alamat email administrator lengkap milik operator, tidak ditaruh di Cloudflare Pages |
 
 Untuk menghasilkan session encryption key secara lokal pada Windows PowerShell, dengan Node.js terpasang:
 
@@ -36,7 +36,7 @@ Untuk menghasilkan session encryption key secara lokal pada Windows PowerShell, 
 node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Simpan hasilnya di **encrypted secret** Cloudflare dan file `.dev.vars` lokal (gitignored). Jangan tempelkan hasilnya di chat, commit, atau GitHub Actions logs. `AUTH_ALIAS_DOMAIN` harus menggunakan domain yang sah untuk alias Auth internal; jika belum ada, jangan mengarang alamat.
+Simpan hasilnya di **encrypted secret** Cloudflare dan file `.dev.vars` lokal (gitignored). Jangan tempelkan hasilnya di chat, commit, atau GitHub Actions logs. Email lengkap milik operator cukup untuk bootstrap administrator pertama.
 
 Rujukan: https://developers.cloudflare.com/pages/functions/bindings/
 
@@ -49,31 +49,22 @@ Rujukan: https://developers.cloudflare.com/pages/functions/bindings/
 
 ## 4. Bootstrap admin pertama (lokal, satu kali)
 
-1. Clone branch `feat/m001-foundation-auth` pada PC admin.
-2. Jalankan `npm ci` (Node 22+).
-3. Gunakan helper Windows di bawah agar secret hanya dimasukkan sebagai input tersembunyi. Alternatif manual melalui `.dev.vars` tetap tersedia untuk operator pengembang; pastikan tidak ter-commit atau disalin ke chat.
-4. Jalankan secara interaktif, tanpa screen recording dan tanpa membagikan output:
+Gunakan **alamat email lengkap yang dimiliki operator**, bukan hanya domain. Akun Gmail yang sudah digunakan juga dapat menjadi identitas teknis Supabase Auth bagi administrator pertama. Di PortalGenius, login tetap **username + password**, bukan email.
 
-```powershell
-node --env-file=.dev.vars scripts/bootstrap-admin.mjs
-```
-
-5. Ketik username, nama, dan konfirmasi project ref. Password sementara acak akan ditampilkan **sekali** di terminal. Simpan di password manager, bukan repo/chat.
-6. Login melalui Pages HTTPS dan ganti password sementara. Jika admin sudah ada, bootstrap akan ditolak — bukan diperbaiki dengan menghapus database.
-
-### Cara Windows yang direkomendasikan (tanpa file secret)
-
-Jika Node.js 22+ dan `npm ci` sudah tersedia di checkout, jalankan pada **Windows PowerShell**:
+1. Di komputer Windows tepercaya, perbarui branch `feat/m001-foundation-auth` dan jalankan `npm ci`.
+2. Jalankan:
 
 ```powershell
 powershell -NoProfile -File .\scripts\bootstrap-admin.ps1
 ```
 
-Helper ini meminta **domain alias Auth internal milik lembaga** dan Supabase **Secret API Key** secara interaktif (input secret tersembunyi). Tidak perlu membuat file `.dev.vars` untuk bootstrap. Jangan menggunakan publishable key. Selesai atau gagal, variabel rahasia proses PowerShell dibersihkan. Domain ini hanya alias login internal, bukan username yang terlihat siswa/guru.
+3. Masukkan email administrator lengkap, lalu Secret API Key Supabase melalui input tersembunyi, bukan publishable key.
+4. Masukkan username, nama tampilan, lalu ketik project ref untuk konfirmasi. Jika `ADMIN_BOOTSTRAP_SUCCESS` muncul, simpan password sementara hanya di password manager.
+5. Login di `https://portalgenius.pages.dev`, wajib ganti password, login lagi, lalu logout. Jangan bagikan password/API key/email alias dalam log.
 
-Setelah muncul `ADMIN_BOOTSTRAP_SUCCESS`, simpan password sementara di password manager pribadi (tidak perlu mengirim ke chat), lalu masuk ke `https://portalgenius.pages.dev/` menggunakan username dan password tersebut. Penggantian password pertama wajib dilalui, kemudian login lagi dan logout. Jika **tidak** muncul `ADMIN_BOOTSTRAP_SUCCESS`, hanya bagikan kode/teks error tanpa kredensial, email alias, atau token. Script memiliki guard hanya boleh dijalankan sebelum terdapat akun aplikasi.
+Alternatif untuk pengembang yang memakai file `.dev.vars` gitignored: isi `SUPABASE_URL`, `EXPECTED_SUPABASE_PROJECT_REF`, `SUPABASE_SECRET_KEY`, `AUTH_ADMIN_EMAIL`. Jalankan `node --env-file=.dev.vars scripts/bootstrap-admin.mjs`.
 
-**Penting:** jangan menghapus akun atau mengulang bootstrap dengan memaksa penghapusan data ketika ada masalah; minta peninjauan status terlebih dahulu.
+Jika gagal, jangan menghapus akun atau memaksa bootstrap ulang. Bagikan kode error tanpa kredensial.
 
 ## 5. Bukti gate hosted
 

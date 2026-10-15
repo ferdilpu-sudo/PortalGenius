@@ -7,7 +7,8 @@
  */
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
+import { validateAdminEmail } from './bootstrap-admin-input.mjs';
 import { createClient } from '@supabase/supabase-js';
 
 const projectRef = 'vpglikrkvsnoyjvluigs';
@@ -20,14 +21,12 @@ async function main() {
   if (!stdin.isTTY) fail('Bootstrap harus dijalankan pada terminal interaktif.');
   const endpoint = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SECRET_KEY;
-  const domain = process.env.AUTH_ALIAS_DOMAIN;
+  const email = validateAdminEmail(process.env.AUTH_ADMIN_EMAIL);
   const expected = process.env.EXPECTED_SUPABASE_PROJECT_REF;
   if (endpoint !== `https://${projectRef}.supabase.co` ||
       expected !== projectRef ||
       !serviceKey ||
-      !domain ||
-      !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])$/.test(domain) ||
-      !domain.includes('.')) {
+      !email) {
     fail('Konfigurasi Supabase belum sesuai proyek PortalGenius.');
   }
   const io = createInterface({ input: stdin, output: stdout });
@@ -53,11 +52,10 @@ async function main() {
   if (countError) fail('Tidak dapat memeriksa keadaan bootstrap. Periksa server credential.');
   if (count !== 0) fail('Bootstrap tertutup: sudah ada akun aplikasi.');
   const password = randomBytes(27).toString('base64url');
-  const email = `pg-${randomUUID()}@${domain}`;
   const {data:created,error:authError}=await admin.auth.admin.createUser({
     email,password,email_confirm:true,app_metadata:{managed_by:'portalgenius'}
   });
-  if (authError || !created?.user?.id) fail('Gagal membuat identitas Auth. Periksa kebijakan alias/domain.');
+  if (authError || !created?.user?.id) fail('Gagal membuat identitas Auth. Email operator harus dimiliki sendiri dan belum terdaftar.');
   const userId=created.user.id;
   const {error:linkError}=await admin.rpc('pg_auth_bootstrap_first_admin',{
     p_auth_user_id:userId,p_username:username,p_auth_alias:email,p_display_name:displayName

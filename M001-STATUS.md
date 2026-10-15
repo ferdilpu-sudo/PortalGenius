@@ -47,3 +47,8 @@ Supabase read-only check: 0 accounts, 0 login identities, 0 assigned roles. Host
 - Wrapper `scripts/bootstrap-admin.ps1` ditambahkan untuk Windows PowerShell: mask input Secret API Key, tanpa menulisnya ke `.dev.vars`.
 - M-001 hosted smoke terakhir PASS 4/4: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38697975557 (attempt 3).
 - Belum ada admin hingga operator menjalankan bootstrap di perangkatnya. Jangan menganggap password change/logout telah PASS.
+
+## Operator bootstrap repair
+
+- Bootstrap first administrator now accepts a complete operator-owned email as private Supabase Auth alias, not an owned domain. Public app login remains username/password.
+- Dependency audit recorded 4 high warnings in Wrangler toolchain; remediation ongoing without force.
