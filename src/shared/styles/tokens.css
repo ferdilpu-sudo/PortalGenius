@@ -1,0 +1,7 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+  --brand: #183153; --brand-dark: #10243e; --action: #0f766e;
+  --background: #f6f8fb; --surface: #fff; --text: #172033;
+  --muted: #475569; --border: #cbd5e1; --danger: #b91c1c; --focus: #1d4ed8;
+}

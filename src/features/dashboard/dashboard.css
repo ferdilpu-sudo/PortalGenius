@@ -1,0 +1,12 @@
+.workspace{min-height:100dvh;display:grid;grid-template-columns:240px 1fr;}
+.workspace-nav{padding:24px 18px;background:white;border-right:1px solid var(--border);}
+.workspace-nav .brand{font-size:17px;margin-bottom:54px;}
+.workspace-nav nav a{display:block;padding:13px 15px;text-decoration:none;font-weight:650;border-radius:8px;}
+.nav-current{color:var(--action);background:#edf5f5;}
+.nav-note{padding:15px;font-size:12px;color:var(--muted);line-height:1.7;}
+.workspace-main{min-width:0;}
+.workspace-header{padding:17px 30px;background:white;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);}
+.workspace-body{max-width:1050px;margin:auto;padding:50px 35px;}.workspace-body h1{font-size:30px;}
+.welcome-panel{background:white;border:1px solid var(--border);border-radius:12px;margin-top:40px;padding:30px;}
+.welcome-panel p{line-height:1.7;color:var(--muted);}
+@media(max-width:600px){.workspace{display:block;}.workspace-nav{padding:16px;border-right:0;border-bottom:1px solid var(--border);}.workspace-nav .brand{margin-bottom:15px;}.nav-note{display:none;}.workspace-body{padding:30px 20px;}}

@@ -1,0 +1,25 @@
+.login-layout {min-height:100dvh;display:grid;grid-template-columns:minmax(390px,1fr) minmax(450px,1fr);}
+.login-intro {padding:45px clamp(32px,5vw,84px) 35px;background:var(--brand);color:#fff;display:flex;flex-direction:column;justify-content:space-between;}
+.brand-light {color:white;}.brand-light .brand-symbol {background:#e6f5f1;color:var(--brand);}
+.intro-content {max-width:540px;}.eyebrow{color:#a9d9d7;}
+.intro-content h1{font-size:clamp(34px,4vw,56px);line-height:1.15;letter-spacing:-2px;margin:25px 0;}
+.intro-content p{line-height:1.8;color:#d7e2ed;}
+.intro-divider{height:1px;background:#ffffff33;margin:35px 0;}
+.intro-footer{font-size:12px;color:#c2d2e4;}
+.login-content {background:#f9fafc;display:grid;place-items:center;padding:42px 32px;}
+.login-card {width:100%;max-width:430px;}
+.mobile-brand {display:none;}.login-card h1,.login-card h2{font-size:35px;letter-spacing:-1.2px;margin:17px 0 12px;}
+.form-subheading{font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:36px;}
+.field{margin-bottom:24px;}.field label{display:block;font-weight:650;font-size:14px;margin-bottom:10px;}
+.field input{display:block;width:100%;height:52px;border:1px solid #bdc9d7;border-radius:8px;background:white;padding:0 15px;}
+.field input:focus{outline:3px solid #bfdbfe;border-color:var(--focus);}
+.password-wrap{position:relative;}.password-wrap input{padding-right:120px;}
+.password-toggle{position:absolute;right:8px;top:7px;bottom:7px;border:0;background:transparent;color:var(--action);font-weight:700;padding:0 12px;}
+.primary-button{width:100%;height:52px;margin-top:30px;border:0;border-radius:8px;background:var(--action);color:#fff;font-weight:700;}
+.primary-button:hover:not(:disabled){background:#115e59;}
+.login-help{margin-top:38px;border-radius:8px;background:#edf5f5;padding:20px;}
+.login-help p{font-size:13px;line-height:1.6;margin:0;color:#334155;}
+.legal-caption{text-align:center;margin-top:25px;font-size:12px;color:#64748b;}
+.password-page{min-height:100dvh;}
+@media(max-width:900px){.login-layout{grid-template-columns:1fr;}.login-intro{display:none;}.login-content{min-height:100dvh;}.mobile-brand{display:flex;margin-bottom:45px;}}
+@media(max-width:600px){.login-content{padding:30px 22px;align-items:start;}.login-card h2{font-size:31px;}}

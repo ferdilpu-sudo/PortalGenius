@@ -1,9 +1,11 @@
 # PortalGenius
 
-Aplikasi administrasi akademik untuk SD, SMP, dan SMA dalam satu lembaga homeschooling.
+Sistem administrasi akademik internal homeschooling jenjang SD, SMP, dan SMA.
 
-Status: fondasi M-001 sedang dikembangkan melalui pull request. Arsitektur React + TypeScript + Cloudflare Pages Functions + Supabase, login username/password, dengan isolasi akses berbasis peran.
+## Status — M-001
 
-**Keamanan:** jangan commit key rahasia, token, password, data siswa nyata, atau file `.dev.vars`.
+Source implementasi fondasi dan autentikasi sedang diverifikasi. Supabase dedicated project: `vpglikrkvsnoyjvluigs`; migrasi SQL `20261015052905_portalgenius_m001_identity_session_foundation` telah diterapkan, tabel aplikasi tetap kosong. Frontend React/TypeScript dengan backend Cloudflare Pages Functions, tanpa password/email pengguna ditampilkan pada UI.
 
-Dokumentasi lengkap, aplikasi, dan pengujian akan berada pada branch implementasi M-001 sampai lolos quality gates.
+Untuk pengembangan lokal: Node 22+, `npm install`, `npm run dev` untuk UI, lalu `npm run build` dan `npx wrangler pages dev dist` untuk API. Atur rahasia pada `.dev.vars` atau pengaturan secret Cloudflare dari contoh. Jangan mengirim secret ke repository.
+
+**Belum untuk produksi:** akun admin awal dan secrets Cloudflare belum dikonfigurasi, browser/hosted login QA belum selesai. Setiap perbaikan harus melalui PR dan quality gate sebelum merge.
