@@ -29,4 +29,14 @@ await probe('unknown username rejected generically','/api/v1/auth/login',{
   method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},
   body:JSON.stringify({username:'qa'+randomBytes(6).toString('hex'),password:'this-is-not-a-real-password'})
 },401,b=>b?.error?.code==='INVALID_CREDENTIALS');
+await probe('foreign origin logout rejected','/api/v1/auth/logout',{
+  method:'POST',headers:{Origin:'https://untrusted.invalid'}
+},403,b=>b?.error?.code==='ORIGIN_DENIED');
+await probe('anonymous password change denied','/api/v1/auth/password',{
+  method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},
+  body:JSON.stringify({currentPassword:'synthetic-old-password',newPassword:'synthetic-new-password'})
+},401,b=>b?.error?.code==='NOT_AUTHENTICATED');
+await probe('unknown session cookie rejected','/api/v1/auth/session',{
+  method:'GET',headers:{Cookie:'__Host-pg_session='+ 'x'.repeat(43)}
+},401,b=>b?.error?.code==='NOT_AUTHENTICATED');
 if(blocked)process.exitCode=1;
