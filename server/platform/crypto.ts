@@ -41,7 +41,7 @@ export async function decryptTokens<T>(secret:string,userId:string,encrypted:str
   if(parts.length!==2)throw new Error('CORRUPT_SESSION');
   const key=await derivedKey(secret,'session-encryption');
   const bytes=await crypto.subtle.decrypt(
-    {name:'AES-GCM',iv:fromBase64url(parts[0]),additionalData:encoder.encode(userId)},
+    {name:'AES-GCM',iv:fromBase64url(parts[0]) as BufferSource,additionalData:encoder.encode(userId)},
     key,fromBase64url(parts[1]) as BufferSource
   );
   return JSON.parse(new TextDecoder().decode(bytes)) as T;
