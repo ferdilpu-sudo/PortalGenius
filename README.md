@@ -17,3 +17,5 @@ Ikuti [runbook Cloudflare Pages](docs/deployment/cloudflare-pages-m001.md). URL 
 Semua API bisnis baru M-002 harus memakai otorisasi sesuai JWT pemanggil/penugasan; jangan melakukan akses bisnis melalui klien `service_role` tanpa periksa izin resource.
 
 Untuk operator Windows, gunakan `powershell -NoProfile -File .\\scripts\\bootstrap-admin.ps1` setelah `npm ci`; helper meminta secret Supabase melalui input tersembunyi. Lihat runbook Cloudflare untuk langkah terperinci.
+
+Bootstrap administrator pertama meminta alamat email operator yang dimiliki sendiri dan Supabase Secret API Key secara tersembunyi. Username dan password tetap merupakan satu-satunya input login aplikasi.

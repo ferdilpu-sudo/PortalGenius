@@ -16,6 +16,8 @@ jobs:
           cache: npm
       - name: Install exact locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Block newly known high/critical dependency vulnerabilities
+        run: npm audit --audit-level=high --no-fund
       - name: Verify source foundation
         run: npm run preflight
       - name: Verify operator script syntax

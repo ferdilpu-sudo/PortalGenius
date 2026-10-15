@@ -52,3 +52,12 @@ Supabase read-only check: 0 accounts, 0 login identities, 0 assigned roles. Host
 
 - Bootstrap first administrator now accepts a complete operator-owned email as private Supabase Auth alias, not an owned domain. Public app login remains username/password.
 - Dependency audit recorded 4 high warnings in Wrangler toolchain; remediation ongoing without force.
+
+## Dependency remediation complete
+
+- Before: npm audit 4 high findings in Wrangler/miniflare/sharp/undici development toolchain.
+- Updated: pinned `wrangler@4.151.0` and regenerated `package-lock.json` in GitHub Actions.
+- npm audit: zero vulnerabilities confirmed by https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38706715872.
+- Source and Windows PowerShell parse verification: PASS at https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38706722096.
+- CI now blocks high/critical findings by running `npm audit --audit-level=high`.
+- User must `git pull` and `npm ci` in their existing local checkout before retrying bootstrap.
