@@ -1,0 +1,23 @@
+name: M002B preview boundary checks
+on:
+  push:
+    branches: [feat/m002b-semesters-catalogs-classes]
+    paths:
+      - '.github/workflows/m002b-preview-smoke.yml'
+      - 'scripts/m002b-preview-smoke.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  anonymous-endpoints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe deployed Preview with synthetic unauthenticated requests
+        run: node scripts/m002b-preview-smoke.mjs
