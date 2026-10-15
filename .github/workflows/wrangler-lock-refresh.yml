@@ -1,0 +1,42 @@
+name: Wrangler security lockfile refresh
+
+on:
+  push:
+    branches: [feat/m001-foundation-auth]
+    paths:
+      - '.github/workflows/wrangler-lock-refresh.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve pinned Wrangler remediation
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-dev --save-exact wrangler@4.151.0
+      - name: Check candidate lockfile and audit
+        shell: bash
+        run: |
+          npm audit --json > npm-audit-upgraded.json || true
+          node scripts/summarize-audit.mjs npm-audit-upgraded.json
+      - name: Print refreshed lockfile in bounded chunks
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const lock=JSON.parse(fs.readFileSync('package-lock.json','utf8'));
+          if(lock.packages?.['node_modules/wrangler']?.version!=='4.151.0'){
+            throw new Error('WRANGLER_TARGET_NOT_RESOLVED');
+          }
+          const packed=Buffer.from(JSON.stringify(lock,null,2)+'\n').toString('base64');
+          process.stdout.write('LOCKFILE_BASE64_BEGIN\n');
+          for(let i=0;i<packed.length;i+=2000)
+            process.stdout.write('LOCKFILE_CHUNK '+Math.floor(i/2000)+' '+packed.slice(i,i+2000)+'\n');
+          process.stdout.write('LOCKFILE_BASE64_END\n');
+          NODE
