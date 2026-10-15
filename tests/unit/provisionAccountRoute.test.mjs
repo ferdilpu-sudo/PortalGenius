@@ -25,3 +25,14 @@ test('account create blocks hostile Origin before touching session',async()=>{
  assert.equal(response.status,403);
  assert.equal((await response.json()).error.code,'ORIGIN_DENIED');
 });
+
+import {validateProvisionRequest} from '../../contracts/accounts/provisionValidation.ts';
+test('account creation form never accepts user-provided Auth emails',()=>{
+ for(const key of ['email','authEmail','password']){
+  const payload={username:'guru_001',displayName:'Guru 001',role:'teacher',[key]:'dummy@example.com'};
+  assert.equal(validateProvisionRequest(payload),null);
+ }
+ assert.deepEqual(validateProvisionRequest({username:'Guru_001',displayName:'Guru 001',role:'teacher'}),{
+  username:'guru_001',displayName:'Guru 001',role:'teacher'
+ });
+});

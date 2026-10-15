@@ -38,7 +38,7 @@ Preview smoke evidence: https://github.com/ferdilpu-sudo/PortalGenius/actions/ru
 
 ## Open decisions and release gates
 
-1. **Email alias strategy:** Supabase Auth needs a technical email identifier even though PortalGenius presents username/password to all users. Prefer a unique verified/recoverable email for each staff member; the email remains internal and does not appear in normal login screens. Do not fabricate addresses on domains the operator does not control. Confirm this policy with the institution before enabling create.
+1. **Email alias strategy (operator answered: staff have no emails):** no personal or institution-owned staff email is required in the UI. The backend proposes deterministic per-request identities `pg-<uuid-without-hyphens>@auth.portalgenius.invalid` using the RFC 2606 reserved, non-deliverable `.invalid` domain. This is a technical Auth identifier, **not a verified mailbox** and not a recovery channel. The account creation form accepts only username, displayName and role. **Supabase GoTrue acceptance of .invalid has not been verified in hosted Auth**; do not enable provisioning until a bounded test in an isolated QA project confirms create/login/delete. If rejected, stop and revisit the backend identity architecture: do not fabricate Gmail accounts or substitute a real third-party domain.
 2. Verify Supabase Auth public signup disabled. Current connector does not expose the setting. Operator should confirm in project dashboard.
 3. Perform hosted end-to-end role isolation using synthetic teacher A/B, counselor A/B, principal with cleanup; avoid real student data.
 4. Execute true concurrent HTTP refresh and replay of revoked cookie under [issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2). Never use the administrator's live cookie for destructive test.
@@ -47,3 +47,11 @@ Preview smoke evidence: https://github.com/ferdilpu-sudo/PortalGenius/actions/ru
 7. Supabase Leaked Password Protection remains an explicitly accepted plan limitation from M-001, **not** a PASS.
 
 This PR should remain Draft. **Do not merge or activate on Production** at this checkpoint.
+
+## Keputusan emailless — 15 Oktober 2026
+
+Pengguna menegaskan bahwa setiap guru dan konselor **tidak memiliki email**. Kontrak API di PR #6 diperbarui: `authEmail` dan `email` ditolak jika dikirim dari browser. Backend sendiri menghasilkan alias unik memakai kunci idempotensi UUID dan domain RFC-reserved `.invalid`. Login PortalGenius tetap berbasis username dan password melalui pemetaan internal Auth.
+
+**Batasan keamanan dan operasional:** tidak ada pengiriman email, undangan, tautan reset, OTP email, atau pemulihan otomatis untuk staf. Perlu dibuat prosedur **reset password oleh administrator** (verifikasi identitas manual, password sementara acak, wajib ganti saat login, pencabutan semua sesi, audit, pembatasan percobaan). Identitas staf harus bisa dinonaktifkan dan dipulihkan tanpa mengubah NIS/relasi penugasan. Prosedur *last-admin recovery* harus didokumentasikan secara terpisah.
+
+**Belum diuji**: kompatibilitas email `.invalid` pada Supabase Auth yang sebenarnya. Jangan klaim address teknis diterima hingga pengujian QA terisolasi lulus. Penutupan PR/Draft tetap diblokir. Referensi teknis: https://supabase.com/docs/reference/javascript/auth-admin-createuser dan https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid.

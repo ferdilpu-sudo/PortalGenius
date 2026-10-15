@@ -31,3 +31,7 @@ PR #4 menambahkan modul Semester, Program, Mata Pelajaran, dan Kelas. Tiga fungs
 ## M-002C2A — Provisioning staf (checkpoint)
 
 Operator confirmed M002C1 menus PASS. [PR #6](https://github.com/ferdilpu-sudo/PortalGenius/pull/6) adds atomic, idempotent, admin-only staff account binding plus guarded BFF endpoint. Live SQL rollback and Preview unauthenticated boundary tests PASS, no accounts created. **Account creation stays disabled** on Production; email alias policy, public signup config and session/role end-to-end remain open. [Evidence](docs/milestones/M002C2A-checkpoint.md).
+
+## Keputusan login tanpa email pribadi
+
+Operator mengonfirmasi guru/konselor tidak memiliki email. PR #6 menghapus input email dari kontrak UI/API, menggunakan alias teknis nondeliverable `@auth.portalgenius.invalid` yang dihasilkan backend dari UUID permintaan. Ini **desain yang belum diverifikasi terhadap Supabase Auth hosted**, bukan bukti bahwa provider menerima domain tersebut. Fitur tetap terkunci sampai QA akun sintetis pada proyek terisolasi dan prosedur reset password admin lolos. Tidak ada akun nyata dibuat.

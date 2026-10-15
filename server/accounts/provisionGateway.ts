@@ -28,7 +28,7 @@ export function provisionGateway(client:SupabaseClient):ProvisionGateway{
   },
   async createAuth(email,password){
    const {data,error}=await client.auth.admin.createUser({
-    email,password,email_confirm:true,app_metadata:{managed_by:'portalgenius'}
+    email,password,email_confirm:true,app_metadata:{managed_by:'portalgenius',identity_kind:'technical_email_no_delivery'}
    });
    if(error||!data.user?.id)throw new Error('AUTH_PROVISION_FAILED');
    return data.user.id;
