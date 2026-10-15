@@ -27,3 +27,7 @@ GitHub CI juga melakukan `npm audit --audit-level=high` serta pemeriksaan sintak
 Untuk tahap M-002, jangan menganggap CI source code menggantikan tes negatif RLS dan hosted E2E. [Pedoman agent](AGENTS.md), [arsitektur](architecture.md), [rencana](plan.md), [strategi tes](testing.md).
 
 **Keamanan:** layanan Supabase saat ini belum mengaktifkan fitur Leaked Password Protection karena pembatasan paket sebagaimana disampaikan operator; temuan advisor dicatat sebagai risiko yang diterima. Uji refresh paralel, replay cookie HTTP, dan formal lint adalah pekerjaan tertunda dengan pelacakan di issue #2. Tidak ada klaim seluruh sistem atau modul M-002..M-007 siap produksi.
+
+## Pengembangan M-002
+
+M-002A sedang dikerjakan di [PR #3](https://github.com/ferdilpu-sudo/PortalGenius/pull/3). Skema katalog dasar telah dibuat dengan RLS deny-by-default. Fitur administrator tahun ajaran di PR belum tersedia pada `main` sampai pengujian hosted/lifecycle selesai. Gunakan [M002A checkpoint](docs/milestones/M002A-checkpoint.md) untuk status yang tepat.
