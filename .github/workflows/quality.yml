@@ -34,14 +34,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Parse Windows administrator bootstrap without secrets
+      - name: Parse Windows operator scripts without running Docker or secrets
         shell: pwsh
         run: |
-          $tokens = $null
-          $parseErrors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile("scripts/bootstrap-admin.ps1", [ref]$tokens, [ref]$parseErrors) | Out-Null
-          if ($parseErrors.Count -gt 0) {
-            $parseErrors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+          foreach ($path in @("scripts/bootstrap-admin.ps1", "scripts/qa-local-auth.ps1")) {
+            $tokens = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              $parseErrors | ForEach-Object { Write-Error "$path - $($_.Message)" }
+              exit 1
+            }
+            Write-Host "WINDOWS_OPERATOR_SCRIPT_SYNTAX_PASS: $path"
           }
-          Write-Host "WINDOWS_BOOTSTRAP_SYNTAX_PASS"

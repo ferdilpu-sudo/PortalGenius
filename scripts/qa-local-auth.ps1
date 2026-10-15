@@ -89,9 +89,9 @@ try {
         }
         [IO.File]::WriteAllText($configPath, $config, [Text.UTF8Encoding]::new($false))
 
+        $initialized = $true # Also clean up containers after partially failed startup.
         Invoke-LocalCli @('start','--exclude',
           'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
-        $initialized = $true
         $lines = & npx.cmd --yes "supabase@$cliVersion" status -o env 2>$null
         if ($LASTEXITCODE -ne 0) { throw 'LOCAL_QA_STATUS_FAILED' }
         $values = @{}

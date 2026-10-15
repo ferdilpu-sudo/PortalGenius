@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { technicalAuthAlias } from '../../server/accounts/technicalAuthAlias.ts';
 import { newTemporaryPassword } from '../../server/accounts/newTemporaryPassword.ts';
@@ -102,7 +103,7 @@ async function main() {
     }
   }
 }
-if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1].replaceAll('\\', '/')).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch(error => {
     console.error('LOCAL_AUTH_PROVIDER_QA_BLOCKED: ' +
       (error instanceof Error ? error.message : 'UNKNOWN'));
