@@ -1,0 +1,25 @@
+name: Hosted staging smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/m001-foundation-auth]
+    paths:
+      - '.github/workflows/hosted-staging-smoke.yml'
+      - 'scripts/hosted-smoke.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-check:
+    name: Read-only staging API checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check PortalGenius Cloudflare Pages
+        run: node scripts/hosted-smoke.mjs https://portalgenius.pages.dev
