@@ -16,7 +16,7 @@ Rujukan: https://developers.cloudflare.com/pages/get-started/git-integration/ da
 
 ## 2. Runtime bindings (Settings > Variables and Secrets)
 
-Masukkan dalam environment yang benar (staging atau production), **sebelum deployment**. Setiap perubahan secret perlu deployment baru.
+Masukkan pada **Production environment** untuk hostname utama `https://portalgenius.pages.dev` (Preview hanya untuk hostname preview). Semua perubahan variable atau secret harus diikuti deployment baru. Jangan memasukkan nilai secret dalam chat/GitHub. Status smoke 15 Oktober 2026: health=200, anon-session=401, login=503, sehingga konfigurasi perlu diperiksa.
 
 | Nama | Jenis | Keterangan |
 |---|---|---|
