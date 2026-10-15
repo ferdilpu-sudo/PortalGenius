@@ -63,3 +63,12 @@ MVP tidak dirilis jika ada akses lintas penugasan, data hilang, hasil nilai sala
 
 ## Pelaporan
 Catat TEST ID, tanggal, environment, command, PASS/FAIL/NOT RUN, bukti tanpa data pribadi dan sisa risiko pada PR atau log CI. Status rencana di [plan](./plan.md) baru Verified setelah bukti tersedia. Untuk ketentuan UI: [design](./design.md).
+## M-002A checkpoint — 15 Oktober 2026
+
+- Unit Node 22/22 PASS, typecheck/build, npm audit 0: [Quality CI](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38729950540).
+- RLS pada tujuh tabel baru dan direct grants deny untuk anon/authenticated: **PASS** lewat Supabase SQL read-only.
+- SQL transaction rollback verifikasi pembuatan tahun ajaran, idempotent retry, audit atomik, konflik overlap, reuse key berbeda, non-admin: **PASS**; tahun ajaran persisten tetap 0.
+- SQL lease session sintetis, klaim ganda, stale version, revocation: **PASS** dengan rollback; jumlah sesi semula tetap sama.
+- Route tests tanpa sesi dan origin asing: **PASS** dalam Node CI.
+- Cloudflare hosted API versi M002A: **NOT RUN** (branch PR belum digabung). Manual UI create/empty/error: **NOT RUN**.
+- Refresh sesi *truly concurrent HTTP* dan replay cookie yang benar-benar dicabut: **NOT RUN**, tetap dalam [issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2).

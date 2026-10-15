@@ -1,0 +1,24 @@
+name: M002A preview smoke
+
+on:
+  push:
+    branches: [feat/m002-security-master-foundation]
+    paths:
+      - '.github/workflows/m002a-preview-smoke.yml'
+      - 'scripts/m002-preview-smoke.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  anonymous-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate deployed M002A frontend and anonymous API
+        run: node scripts/m002-preview-smoke.mjs
