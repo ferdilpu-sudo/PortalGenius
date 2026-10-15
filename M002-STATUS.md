@@ -27,3 +27,7 @@ PR #4 menambahkan modul Semester, Program, Mata Pelajaran, dan Kelas. Tiga fungs
 ## M-002C1 — landasan keamanan dan master baca saja
 
 [PR #5](https://github.com/ferdilpu-sudo/PortalGenius/pull/5) menambahkan tujuh tabel RLS dan empat endpoint baca sesuai peran. Supabase migrasi diterapkan, SQL rollback cross-role PASS tanpa fixture persisten, GitHub Quality **32/32 PASS**, preview anonim **7/7 PASS**. Penambahan akun/guru/siswa/penugasan dan HTTP multi-role masih NOT RUN. [Lihat checkpoint](docs/milestones/M002C1-checkpoint.md).
+
+## M-002C2A — Provisioning staf (checkpoint)
+
+Operator confirmed M002C1 menus PASS. [PR #6](https://github.com/ferdilpu-sudo/PortalGenius/pull/6) adds atomic, idempotent, admin-only staff account binding plus guarded BFF endpoint. Live SQL rollback and Preview unauthenticated boundary tests PASS, no accounts created. **Account creation stays disabled** on Production; email alias policy, public signup config and session/role end-to-end remain open. [Evidence](docs/milestones/M002C2A-checkpoint.md).
