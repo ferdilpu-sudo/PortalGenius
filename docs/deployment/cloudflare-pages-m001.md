@@ -1,6 +1,6 @@
 # PortalGenius — Staging Cloudflare Pages M-001
 
-Status: persiapan deploy, **belum** ter-deploy atau diuji hosted.
+Status: URL produksi-staging **sudah ter-deploy**; empat pemeriksaan smoke API hosted telah PASS. Login akun administrator nyata belum diuji.
 Tanggal: 15 Oktober 2026. Lakukan konfigurasi hanya melalui dashboard Cloudflare, bukan dalam GitHub source, chat, atau issue.
 
 ## 1. Koneksi GitHub dan build
@@ -16,7 +16,7 @@ Rujukan: https://developers.cloudflare.com/pages/get-started/git-integration/ da
 
 ## 2. Runtime bindings (Settings > Variables and Secrets)
 
-Masukkan pada **Production environment** untuk hostname utama `https://portalgenius.pages.dev` (Preview hanya untuk hostname preview). Semua perubahan variable atau secret harus diikuti deployment baru. Jangan memasukkan nilai secret dalam chat/GitHub. Status smoke 15 Oktober 2026: health=200, anon-session=401, login=503, sehingga konfigurasi perlu diperiksa.
+Masukkan pada **Production environment** untuk hostname utama `https://portalgenius.pages.dev` (Preview hanya untuk hostname preview). Semua perubahan variable atau secret harus diikuti deployment baru. Jangan memasukkan nilai secret dalam chat/GitHub. Status smoke 15 Oktober 2026 setelah konfigurasi diperbaiki: health=200, sesi anonim=401, origin asing=403, username tak dikenal=401 (semua PASS).
 
 | Nama | Jenis | Keterangan |
 |---|---|---|
@@ -51,7 +51,7 @@ Rujukan: https://developers.cloudflare.com/pages/functions/bindings/
 
 1. Clone branch `feat/m001-foundation-auth` pada PC admin.
 2. Jalankan `npm ci` (Node 22+).
-3. Salin `.dev.vars.example` ke `.dev.vars`, isi project ref, key publishable, **secret key**, `SESSION_ENCRYPTION_KEY`, dan `AUTH_ALIAS_DOMAIN`. Tetapkan `APP_ORIGIN` sesuai target hosted.
+3. Gunakan helper Windows di bawah agar secret hanya dimasukkan sebagai input tersembunyi. Alternatif manual melalui `.dev.vars` tetap tersedia untuk operator pengembang; pastikan tidak ter-commit atau disalin ke chat.
 4. Jalankan secara interaktif, tanpa screen recording dan tanpa membagikan output:
 
 ```powershell
@@ -60,6 +60,20 @@ node --env-file=.dev.vars scripts/bootstrap-admin.mjs
 
 5. Ketik username, nama, dan konfirmasi project ref. Password sementara acak akan ditampilkan **sekali** di terminal. Simpan di password manager, bukan repo/chat.
 6. Login melalui Pages HTTPS dan ganti password sementara. Jika admin sudah ada, bootstrap akan ditolak — bukan diperbaiki dengan menghapus database.
+
+### Cara Windows yang direkomendasikan (tanpa file secret)
+
+Jika Node.js 22+ dan `npm ci` sudah tersedia di checkout, jalankan pada **Windows PowerShell**:
+
+```powershell
+powershell -NoProfile -File .\scripts\bootstrap-admin.ps1
+```
+
+Helper ini meminta **domain alias Auth internal milik lembaga** dan Supabase **Secret API Key** secara interaktif (input secret tersembunyi). Tidak perlu membuat file `.dev.vars` untuk bootstrap. Jangan menggunakan publishable key. Selesai atau gagal, variabel rahasia proses PowerShell dibersihkan. Domain ini hanya alias login internal, bukan username yang terlihat siswa/guru.
+
+Setelah muncul `ADMIN_BOOTSTRAP_SUCCESS`, simpan password sementara di password manager pribadi (tidak perlu mengirim ke chat), lalu masuk ke `https://portalgenius.pages.dev/` menggunakan username dan password tersebut. Penggantian password pertama wajib dilalui, kemudian login lagi dan logout. Jika **tidak** muncul `ADMIN_BOOTSTRAP_SUCCESS`, hanya bagikan kode/teks error tanpa kredensial, email alias, atau token. Script memiliki guard hanya boleh dijalankan sebelum terdapat akun aplikasi.
+
+**Penting:** jangan menghapus akun atau mengulang bootstrap dengan memaksa penghapusan data ketika ada masalah; minta peninjauan status terlebih dahulu.
 
 ## 5. Bukti gate hosted
 

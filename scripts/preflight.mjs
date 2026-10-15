@@ -5,6 +5,7 @@ for (const path of [
   'supabase/migrations/20261015052905_portalgenius_m001_identity_session_foundation.sql',
   'supabase/migrations/20261015062143_portalgenius_m001_first_admin_bootstrap.sql',
   'scripts/bootstrap-admin.mjs',
+  'scripts/bootstrap-admin.ps1',
 ]) {
   const ok=existsSync(path);
   console.log((ok?'PASS':'BLOCKED')+': '+path);

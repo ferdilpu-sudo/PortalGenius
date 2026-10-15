@@ -41,3 +41,9 @@ Target: https://portalgenius.pages.dev
 | POST /api/v1/auth/login with nonexistent synthetic username | 401 | PASS |
 
 Supabase read-only check: 0 accounts, 0 login identities, 0 assigned roles. Hosted login with a real administrator, forced password change, refresh concurrency, logout replay, and full negative-RLS TEST-001 remain NOT RUN. No student data or credentials were used in this smoke check. M-001 remains IN PROGRESS and PR #1 remains draft.
+
+## Operator bootstrap improvement — 15 Oktober 2026
+
+- Wrapper `scripts/bootstrap-admin.ps1` ditambahkan untuk Windows PowerShell: mask input Secret API Key, tanpa menulisnya ke `.dev.vars`.
+- M-001 hosted smoke terakhir PASS 4/4: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38697975557 (attempt 3).
+- Belum ada admin hingga operator menjalankan bootstrap di perangkatnya. Jangan menganggap password change/logout telah PASS.
