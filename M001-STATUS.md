@@ -2,10 +2,12 @@
 
 Tanggal 15 Oktober 2026.
 
-- Source React/TS, Pages Functions dan autentikasi username ada di branch `feat/m001-foundation-auth`.
-- Supabase project khusus: `vpglikrkvsnoyjvluigs`; migrasi `20261015052905` dan `20261015053715` telah diterapkan.
-- 6 tabel menggunakan RLS; 10 RPC `pg_auth_*` ditutup dari anon/authenticated; fungsi event trigger juga ditutup.
-- Database aplikasi belum memiliki akun atau data siswa.
-- CI sebelumnya PASS untuk typecheck, unit test, dan build; kini memakai `npm ci` dari `package-lock.json` yang telah dikomit.
-- Gate masih OPEN: bootstrap admin, konfigurasi secrets Cloudflare Pages, browser hosted TEST-001, concurrency refresh/logout/revoke, negative RLS end-to-end.
-- Jangan merge PR #1 atau menganggap M-001 Verified sebelum seluruh gate penting teruji.
+- Kode React/TypeScript, Pages Functions dan autentikasi username ada di branch `feat/m001-foundation-auth`, PR #1 (draft).
+- Supabase project khusus `vpglikrkvsnoyjvluigs`. Tiga migrasi telah diterapkan: identitas/sesi, pembatasan akses fungsi RLS, bootstrap satu kali admin.
+- 6 tabel RLS dan 11 RPC `pg_auth_*` hanya untuk `service_role`; empat info RLS-without-policy adalah deny-by-default.
+- Uji negatif bootstrap identitas Auth tak ada: ditolak; akun aplikasi tetap 0.
+- `scripts/bootstrap-admin.mjs` menyediakan operator bootstrap tanpa pendaftaran umum dan tanpa commit password.
+- CI menggunakan `npm ci` dan lockfile yang disimpan; TypeScript/test/build PASS di commit sebelum perubahan ini.
+- Runbook `docs/deployment/cloudflare-pages-m001.md` dan `scripts/hosted-smoke.mjs` dibuat.
+- **OPEN**: akun admin nyata, hosting Cloudflare, secret runtime, negative RLS dengan JWT lintas peran, browser TEST-001 termasuk concurrent refresh/logout/revoke.
+- **JANGAN MERGE** PR #1 hingga hosted gate PASS. Periksa pembatasan service_role business data sebelum M-002.
