@@ -21,3 +21,7 @@
 - Arsip mempertahankan histori; tidak ada cascade delete pada data akademik.
 - Sesi admin/operator saat ini tidak disentuh oleh test fixture dan database harus tetap tanpa siswa nyata maupun dummy setelah SQL rollback.
 - `pg_m002c_visible_students` bukan endpoint publik; hanya dapat dipanggil service_role dari Pages BFF yang telah memverifikasi cookie serta sesi.
+
+## Checkpoint M-002C1
+
+[Detailed QA](M002C1-checkpoint.md). Database schema dan proyeksi read-only sudah diterapkan dan diverifikasi melalui synthetic SQL rollback. HTTP test dengan akun guru/konselor nyata belum dilakukan dan fitur mutasi belum diaktifkan.

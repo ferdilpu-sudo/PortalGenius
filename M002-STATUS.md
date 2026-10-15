@@ -23,3 +23,7 @@ No authenticated admin mutation on preview was executed. Browser master-data wri
 ## M-002B — semester dan katalog (15 Oktober 2026)
 
 PR #4 menambahkan modul Semester, Program, Mata Pelajaran, dan Kelas. Tiga fungsi RPC sudah diterapkan dan audit SQL rollback PASS tanpa data persisten. Versi migrasi GitHub diselaraskan dengan Supabase. Preview Cloudflare: 14/14 anonymous/Origin tests PASS (attempt 2) setelah perbaikan fail-closed pada request anonim. Read/write authenticated admin belum diuji pada Preview/Production. [Detail bukti](docs/milestones/M002B-checkpoint.md).
+
+## M-002C1 — landasan keamanan dan master baca saja
+
+[PR #5](https://github.com/ferdilpu-sudo/PortalGenius/pull/5) menambahkan tujuh tabel RLS dan empat endpoint baca sesuai peran. Supabase migrasi diterapkan, SQL rollback cross-role PASS tanpa fixture persisten, GitHub Quality **32/32 PASS**, preview anonim **7/7 PASS**. Penambahan akun/guru/siswa/penugasan dan HTTP multi-role masih NOT RUN. [Lihat checkpoint](docs/milestones/M002C1-checkpoint.md).

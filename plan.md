@@ -48,7 +48,7 @@ M-002: semester/year -> master -> enrollment -> assignment -> akun dan reset -> 
 | Milestone | Status | Bukti |
 |---|---|---|
 | M-001 | **Closed — accepted exceptions** | CI 12/12 unit PASS, npm audit 0, typecheck/build PASS; tiga migrasi, hosted API 4/4, admin bootstrap/login/password/logout/relogin PASS; sesi revoked ditolak SQL. Lihat [M001 closeout](docs/milestones/M001-closeout.md). Deferred: [#2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2). |
-| M-002 | **In progress — M002B** | M002A merged. [PR #4](https://github.com/ferdilpu-sudo/PortalGenius/pull/4): semester, program, mata pelajaran, kelas; Supabase functions applied; rollback SQL PASS; Preview anonymous/Origin 14/14 PASS; admin CRUD browser dan multi-role masih NOT RUN. |
+| M-002 | **In progress — M002C1** | M002A+B merged. [PR #5](https://github.com/ferdilpu-sudo/PortalGenius/pull/5): 7 tabel siswa/guru/penugasan RLS, proyeksi role scoped, 32 tes PASS, SQL cross-role rollback PASS, Preview 7/7; provisioning dan authenticated E2E NOT RUN. |
 | M-003 | Not started | Menunggu master dan assignment |
 | M-004 | Not started | Menunggu model akademik |
 | M-005 | Not started | Menunggu penugasan konselor |
