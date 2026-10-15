@@ -1,0 +1,21 @@
+name: M002C2 provisioning boundary preview
+on:
+  push:
+    branches: [feat/m002c2-account-provisioning-gates]
+    paths:
+      - '.github/workflows/m002c2-preview-smoke.yml'
+      - 'scripts/m002c2-preview-smoke.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provisioning-deny:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify non-authenticated provisioning is blocked on Preview
+        run: node scripts/m002c2-preview-smoke.mjs
