@@ -29,6 +29,12 @@ Audit events dibangun sejak mutation pertama M-001/M-002, bukan baru M-007. Seti
 
 Urutan TASK-001 -> TASK-002 -> TASK-003/004 sesuai dependensi kontrak -> TASK-005 -> TASK-006. Tidak menyimpan kredensial nyata dalam dokumen atau commit. Jika provider/akun belum siap, tandai hosted auth NOT RUN; lanjutkan unit/synthetic UI yang independen, jangan menyebut M-001 Verified.
 
+## Gate M-002C2 akun tanpa email (15 Oktober 2026)
+
+- Operator memastikan staf tidak memiliki email pribadi. Login tetap username/password, server-only Auth alias RFC reserved `.invalid` masih menunggu uji kompatibilitas isolated QA.
+- [PR #6](https://github.com/ferdilpu-sudo/PortalGenius/pull/6) Draft: provisioning email-less dan reset password admin dua fase; Supabase migrations applied; 51 unit PASS dan Preview 7/7. Fitur tidak diaktifkan dan belum di-merge.
+- Butuh proyek QA khusus (jangan gunakan LayarBelajar staging), uji Auth + session replay/concurrency, public sign-up OFF, manual reconciliation reset, dan role E2E sebelum staf dapat dibuat.
+
 ## Penyelesaian dan dependensi
 
 Tidak ada penundaan M-001 yang diklaim PASS. Pada awal M-002, tangani issue [#2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2) untuk refresh paralel, replay cookie HTTP, lint/format formal, dan perlindungan akses sebelum provisioning multi-peran. Leaked Password Protection khusus tier berbayar diterima sebagai risiko terpisah, tidak mengubah klaim fitur keamanan yang tersedia.

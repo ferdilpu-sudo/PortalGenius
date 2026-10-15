@@ -55,3 +55,32 @@ Pengguna menegaskan bahwa setiap guru dan konselor **tidak memiliki email**. Kon
 **Batasan keamanan dan operasional:** tidak ada pengiriman email, undangan, tautan reset, OTP email, atau pemulihan otomatis untuk staf. Perlu dibuat prosedur **reset password oleh administrator** (verifikasi identitas manual, password sementara acak, wajib ganti saat login, pencabutan semua sesi, audit, pembatasan percobaan). Identitas staf harus bisa dinonaktifkan dan dipulihkan tanpa mengubah NIS/relasi penugasan. Prosedur *last-admin recovery* harus didokumentasikan secara terpisah.
 
 **Belum diuji**: kompatibilitas email `.invalid` pada Supabase Auth yang sebenarnya. Jangan klaim address teknis diterima hingga pengujian QA terisolasi lulus. Penutupan PR/Draft tetap diblokir. Referensi teknis: https://supabase.com/docs/reference/javascript/auth-admin-createuser dan https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid.
+
+## M-002C2B — Reset password oleh administrator tanpa email (15 Oktober 2026)
+
+Operator memilih mode akun staf tanpa email. Pemulihan password tidak menggunakan link email ataupun OTP email.
+
+### Implementasi
+- `private.staff_password_reset_ops` adalah jurnal dua fase (pending/completed), dengan RLS deny-by-default dan satu operasi pending maksimum per pengguna.
+- `pg_m002c2_begin_staff_password_reset` hanya bisa dijalankan service_role untuk target non-admin PortalGenius aktif yang beridentitas teknis. Ia memeriksa admin operator, mengecualikan reset diri, mewajibkan target punya role staf, menandai `must_change_password=true`, mencabut sesi aplikasi target, serta mencatat audit dalam satu transaksi.
+- `pg_m002c2_complete_staff_password_reset` mencatat audit selesai setelah backend menerima sukses dari Supabase Auth Admin password update. Reuse operasi atau operasi yang bukan milik actor ditolak.
+- `POST /api/v1/accounts/reset-password`: Origin, sesi login, CSRF, role admin, feature gate sama dengan provisioning. Tidak ada tombol UI. Fitur **OFF** pada Production, bahkan bila variable opt-in keliru diisi.
+- Password sementara CSPRNG hanya dikembalikan setelah operasi `complete` berhasil. Timeout/failure mempertahankan operasi pending, tidak mengungkap password yang belum bisa dijamin berlaku, dan membutuhkan peninjauan manual.
+
+### Bukti verifikasi
+
+- Migrasi Supabase `20261015154828_m002c2_staff_password_reset`: **APPLIED**.
+- SQL rollback setelah penerapan migrasi: nonadmin rejected, admin self-reset rejected, revoked old app session, must-change flag, one pending per target, double-complete rejected, dua event audit, privileges denied untuk anon/authenticated: **PASS**. Satu administrator nyata tetap tidak disentuh.
+- Supabase read-only: 1 akun saat ini, 0 reset operations tersimpan.
+- CI terbaru [Quality 51/51 unit PASS, npm audit 0, build PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38763749032).
+- Cloudflare Preview [7/7 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38763738523): HTML, health, accounts anon, origin asing + no-cookie untuk provision dan reset. Tidak ada mutasi terhadap akun nyata.
+
+### Gate yang masih BLOCKED / NOT RUN
+
+1. **Kompatibilitas Supabase Auth dengan `@auth.portalgenius.invalid`: NOT RUN**. Saat ini tidak terdapat proyek Supabase QA terisolasi; ada dua proyek terhubung (PortalGenius dan LayarBelajar staging). **Jangan uji Auth create/update/delete pada salah satu proyek utama itu** tanpa rencana lingkungan QA terpisah. Jika alias ditolak provider, ubah desain secara aman daripada menggunakan domain email pihak lain.
+2. Pengujian backend penuh end-to-end dengan akun sintetis guru A/B, konselor, principal; create + login + password change + reset + cleanup pada QA: NOT RUN.
+3. HTTP cookie replay setelah revoke, true concurrent refresh, public signup disabled: NOT RUN ([issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2)).
+4. Workflow recovery manual untuk operasi reset yang pending/unknown: desain fail-closed tersedia, tetapi prosedur rekonsiliasi eksplisit belum dibuat. Jangan aktifkan reset sampai siap.
+5. Staff create UI, guru/siswa, class/enrollment/assignment mutasi: NOT RUN. Data siswa nyata tetap dilarang sebelum gate role isolation.
+
+**Keputusan:** PR #6 tetap **Draft**. Migrasi telah diterapkan tanpa mengubah akun aktif; kode fitur account provisioning/reset hanya ada pada branch. Jangan mengaktifkan `ACCOUNT_PROVISIONING_ENABLED` di Production.

@@ -35,3 +35,7 @@ Operator confirmed M002C1 menus PASS. [PR #6](https://github.com/ferdilpu-sudo/P
 ## Keputusan login tanpa email pribadi
 
 Operator mengonfirmasi guru/konselor tidak memiliki email. PR #6 menghapus input email dari kontrak UI/API, menggunakan alias teknis nondeliverable `@auth.portalgenius.invalid` yang dihasilkan backend dari UUID permintaan. Ini **desain yang belum diverifikasi terhadap Supabase Auth hosted**, bukan bukti bahwa provider menerima domain tersebut. Fitur tetap terkunci sampai QA akun sintetis pada proyek terisolasi dan prosedur reset password admin lolos. Tidak ada akun nyata dibuat.
+
+## M-002C2B — Password reset admin tanpa email
+
+Pengembangan reset password staf telah selesai pada branch Draft PR #6 (belum di main). Supabase migration `20261015154828` applied dan SQL rollback keamanan PASS. 51/51 unit PASS, npm audit 0, Preview 7/7 PASS. Satu admin eksisting tidak disentuh; 0 operasi reset persisten. Karena tidak ada QA Supabase terisolasi, kompatibilitas alamat teknis `.invalid` dan Auth create/login/reset/delete masih **NOT RUN**. Production create/reset tetap OFF sampai QA dan prosedur rekonsiliasi tersedia. [Bukti dan risiko](docs/milestones/M002C2A-checkpoint.md).
