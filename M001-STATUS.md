@@ -11,3 +11,17 @@ Tanggal 15 Oktober 2026.
 - Runbook `docs/deployment/cloudflare-pages-m001.md` dan `scripts/hosted-smoke.mjs` dibuat.
 - **OPEN**: akun admin nyata, hosting Cloudflare, secret runtime, negative RLS dengan JWT lintas peran, browser TEST-001 termasuk concurrent refresh/logout/revoke.
 - **JANGAN MERGE** PR #1 hingga hosted gate PASS. Periksa pembatasan service_role business data sebelum M-002.
+
+## Bukti hosted 2026-10-15
+
+URL operator: `https://portalgenius.pages.dev`.
+Workflow: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38697975557
+
+- GET `/api/v1/health` => 200 PASS.
+- GET `/api/v1/auth/session` tanpa cookie => 401 PASS.
+- POST login dengan Origin asing => 503, diharapkan 403 (BLOCKED).
+- POST login dengan username sintetis yang tidak ada => 503, diharapkan 401 (BLOCKED).
+- Diagnosis: kedua request login melewati `verifyEnv` sebelum langkah lainnya; 503 konsisten dengan konfigurasi server yang hilang/tidak cocok, tetapi belum membuktikan variabel mana yang salah.
+- Perbaikan: `AUTH_ALIAS_DOMAIN` dijadikan opsional pada runtime karena hanya dipakai untuk operator bootstrap.
+- Tindakan operator: atur variables & encrypted secrets pada **Production** environment proyek Pages (untuk `portalgenius.pages.dev`), deploy ulang, jalankan workflow *Hosted staging smoke* secara manual. Jangan menempelkan secret pada issue/chat/log.
+- Hosted TEST-001 tetap OPEN; tidak ada akun admin nyata.
