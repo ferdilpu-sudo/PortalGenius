@@ -10,7 +10,7 @@ import {privilegedClient} from '../platform/supabase.ts';
 import {failure,success,unavailable} from '../platform/responses.ts';
 import {isUUID} from '../../contracts/master/academicYearValidation.ts';
 
-export function masterList<T>(list:(db:SupabaseClient)=>Promise<T[]>){
+export function masterList<T>(list:(db:SupabaseClient,actorId:string)=>Promise<T[]>){
  return async ({request,env}:PageContext):Promise<Response>=>{
   const id=crypto.randomUUID(),handle=getCookie(request,SESSION_COOKIE);
   if(!handle)return failure(id,401,'NOT_AUTHENTICATED','Silakan masuk.');
@@ -19,7 +19,7 @@ export function masterList<T>(list:(db:SupabaseClient)=>Promise<T[]>){
    const session=await restoreSession(cfg,handle);
    if(!session)return failure(id,401,'NOT_AUTHENTICATED','Sesi tidak berlaku.');
    if(!hasAdminAccess(session.profile))return failure(id,403,'FORBIDDEN','Akses hanya untuk administrator.');
-   return success(id,await list(privilegedClient(cfg)));
+   return success(id,await list(privilegedClient(cfg),session.profile.id));
   }catch{return unavailable(id);}
  };
 }
