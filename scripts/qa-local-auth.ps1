@@ -28,7 +28,7 @@ function Set-LocalPort([string]$text, [int]$oldPort, [int]$newPort) {
     if (-not [regex]::IsMatch($text, $pattern)) {
         throw "LOCAL_QA_CONFIG_PORT_MISSING: $oldPort"
     }
-    return [regex]::Replace($text, $pattern, ('$1' + $newPort))
+    return [regex]::Replace($text, $pattern, ('${1}' + $newPort))
 }
 
 try {
