@@ -30,10 +30,17 @@ export function masterCreate<I,T>(
  return async ({request,env}:PageContext):Promise<Response>=>{
   const id=crypto.randomUUID();
   try{
-   const cfg=verifyEnv(env);
-   if(!isTrustedMutation(request,cfg.APP_ORIGIN))return failure(id,403,'ORIGIN_DENIED','Permintaan tidak diizinkan.');
+   // Fail closed at the HTTP boundary, even if Preview secrets are absent.
+   // These checks do not authenticate a user or claim the backend is ready.
+   const requestOrigin=new URL(request.url).origin;
+   if(!isTrustedMutation(request,requestOrigin))
+    return failure(id,403,'ORIGIN_DENIED','Permintaan tidak diizinkan.');
    const handle=getCookie(request,SESSION_COOKIE);
    if(!handle)return failure(id,401,'NOT_AUTHENTICATED','Silakan masuk.');
+   const cfg=verifyEnv(env);
+   // Authenticated mutations must ALSO match the configured app origin.
+   if(!isTrustedMutation(request,cfg.APP_ORIGIN))
+    return failure(id,403,'ORIGIN_DENIED','Permintaan tidak diizinkan.');
    if(!await verifyCsrf(cfg.SESSION_ENCRYPTION_KEY,handle,request.headers.get('X-CSRF-Token')))
     return failure(id,403,'CSRF_DENIED','Permintaan tidak diizinkan.');
    const session=await restoreSession(cfg,handle);

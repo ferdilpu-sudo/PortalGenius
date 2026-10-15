@@ -24,3 +24,16 @@ test('M002B term mutation validates environment, origin, session',async()=>{
  method:'POST',headers:{Origin:config.APP_ORIGIN}}),env:config});
  assert.equal(absent.status,401);
 });
+
+test('M002B early rejection remains safe when Preview secrets are unavailable',async()=>{
+ const preview='https://feat-m002b-semesters-catalog.portalgenius.pages.dev';
+ const wrong=await postTerms({request:new Request(preview+'/api/v1/terms',{
+  method:'POST',headers:{Origin:'https://attacker.invalid'}
+ }),env:{}});
+ assert.equal(wrong.status,403);
+ const noCookie=await postTerms({request:new Request(preview+'/api/v1/terms',{
+  method:'POST',headers:{Origin:preview}
+ }),env:{}});
+ assert.equal(noCookie.status,401);
+ // This does not prove authenticated Preview mutations work.
+});
