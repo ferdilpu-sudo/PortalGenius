@@ -7,4 +7,5 @@ import './features/auth/auth.css';
 import './features/dashboard/dashboard.css';
 import './features/academicYears/academicYears.css';
 import './features/master/master.css';
+import './features/accounts/accountList.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
