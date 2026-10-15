@@ -68,6 +68,25 @@ begin
  values(counselor_a,sb,'2026-07-01','2026-12-31'),
        (counselor_b,sa,'2026-07-01','2026-08-15');
 
+ if jsonb_array_length(public.pg_m002c_list_accounts(admin_id))<>6 then
+  raise exception 'ADMIN_ACCOUNT_LIST_INCOMPLETE'; end if;
+ if jsonb_array_length(public.pg_m002c_list_teachers(admin_id))<>2 then
+  raise exception 'ADMIN_TEACHER_LIST_INCOMPLETE'; end if;
+ if jsonb_array_length(public.pg_m002c_list_assignments(admin_id))<>2 then
+  raise exception 'ADMIN_ASSIGNMENT_LIST_INCOMPLETE'; end if;
+ if position('@' in public.pg_m002c_list_accounts(admin_id)::text)>0 then
+  raise exception 'AUTH_EMAIL_ALIAS_EXPOSED'; end if;
+ begin
+  perform public.pg_m002c_list_accounts(teacher_a);
+  raise exception 'TEACHER_CAN_LIST_ALL_ACCOUNTS';
+ exception when insufficient_privilege then null;
+ end;
+ begin
+  perform public.pg_m002c_list_assignments(principal_a);
+  raise exception 'PRINCIPAL_CAN_LIST_RAW_ASSIGNMENTS';
+ exception when insufficient_privilege then null;
+ end;
+
  result:=public.pg_m002c_visible_students(admin_id,asof);
  if jsonb_array_length(result)<>3 then raise exception 'ADMIN_SCOPE_INCORRECT';end if;
 
