@@ -21,7 +21,7 @@ begin
  into v_admin,v_teacher,v_counselor;
  -- Never expose date of birth, guardians, phone numbers, private notes or
  -- any other columns through the teacher/counselor projection.
- select pg_catalog.coalesce(pg_catalog.jsonb_agg(
+ select coalesce(pg_catalog.jsonb_agg(
   pg_catalog.jsonb_build_object('id',s.id,'nis',s.nis,'fullName',s.full_name)
   order by s.full_name,s.id
  ),'[]'::jsonb) into v_result
