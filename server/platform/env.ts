@@ -1,10 +1,10 @@
 export type Env={
   SUPABASE_URL?:string;SUPABASE_PUBLISHABLE_KEY?:string;SUPABASE_SECRET_KEY?:string;
   SESSION_ENCRYPTION_KEY?:string;SESSION_KEY_VERSION?:string;
-  APP_ORIGIN?:string;APP_ENV?:string;AUTH_ALIAS_DOMAIN?:string;
+  APP_ORIGIN?:string;APP_ENV?:string;AUTH_ALIAS_DOMAIN?:string;ACCOUNT_PROVISIONING_ENABLED?:string;
   EXPECTED_SUPABASE_PROJECT_REF?:string;
 };
-export type VerifiedEnv=Required<Omit<Env,'AUTH_ALIAS_DOMAIN'>> & Pick<Env,'AUTH_ALIAS_DOMAIN'>;
+export type VerifiedEnv=Required<Omit<Env,'AUTH_ALIAS_DOMAIN'|'ACCOUNT_PROVISIONING_ENABLED'>> & Pick<Env,'AUTH_ALIAS_DOMAIN'|'ACCOUNT_PROVISIONING_ENABLED'>;
 export function verifyEnv(env:Env):VerifiedEnv {
   const required=[
     'SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SECRET_KEY',
