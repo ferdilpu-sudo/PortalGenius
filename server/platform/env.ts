@@ -4,12 +4,12 @@ export type Env={
   APP_ORIGIN?:string;APP_ENV?:string;AUTH_ALIAS_DOMAIN?:string;
   EXPECTED_SUPABASE_PROJECT_REF?:string;
 };
-export type VerifiedEnv=Required<Env>;
+export type VerifiedEnv=Required<Omit<Env,'AUTH_ALIAS_DOMAIN'>> & Pick<Env,'AUTH_ALIAS_DOMAIN'>;
 export function verifyEnv(env:Env):VerifiedEnv {
   const required=[
     'SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SECRET_KEY',
     'SESSION_ENCRYPTION_KEY','SESSION_KEY_VERSION','APP_ORIGIN',
-    'APP_ENV','EXPECTED_SUPABASE_PROJECT_REF','AUTH_ALIAS_DOMAIN'
+    'APP_ENV','EXPECTED_SUPABASE_PROJECT_REF'
   ] as const;
   for(const key of required) if(!env[key])throw new Error('CONFIG_MISSING_'+key);
   const cfg=env as VerifiedEnv;
