@@ -1,14 +1,15 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
 import type {ProvisionRequest} from '../../contracts/accounts/provisionValidation.ts';
+import type {ProvisionIdentity} from './technicalAuthAlias.ts';
 
 export type AccountProvisionSummary={
  id:string;username:string;displayName:string;role:ProvisionRequest['role'];
  active:true;mustChangePassword:true
 };
 export type ProvisionGateway={
- readResult:(actorId:string,key:string,request:ProvisionRequest)=>Promise<AccountProvisionSummary|null>;
+ readResult:(actorId:string,key:string,request:ProvisionIdentity)=>Promise<AccountProvisionSummary|null>;
  createAuth:(email:string,password:string)=>Promise<string>;
- bindAccount:(actorId:string,userId:string,request:ProvisionRequest,key:string,
+ bindAccount:(actorId:string,userId:string,request:ProvisionIdentity,key:string,
   requestId:string)=>Promise<AccountProvisionSummary>;
  deleteAuth:(userId:string)=>Promise<boolean>;
 };
