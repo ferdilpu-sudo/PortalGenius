@@ -31,6 +31,7 @@ test('environment must target dedicated Supabase project and HTTPS hosted',()=>{
     EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs'
   };
   assert.equal(verifyEnv(good).APP_ENV,'staging');
+  assert.equal(verifyEnv({...good,AUTH_ALIAS_DOMAIN:undefined}).APP_ENV,'staging');
   assert.throws(()=>verifyEnv({...good,SUPABASE_URL:'https://qfkjcjzwhewsbblgumco.supabase.co'}));
   assert.throws(()=>verifyEnv({...good,APP_ORIGIN:'http://portalgenius.example.org'}));
   assert.throws(()=>verifyEnv({...good,SESSION_KEY_VERSION:'0'}));
