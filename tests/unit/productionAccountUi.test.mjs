@@ -65,3 +65,25 @@ test('uncertain server response is not disguised as a successful staff creation'
   e=>e instanceof AccountRequestError&&e.code==='UNKNOWN_RESPONSE');
  }finally{globalThis.fetch=original;}
 });
+test('client rejects wrong HTTP status and non-object response after an attempted write',async()=>{
+ const original=globalThis.fetch;
+ const key='ba2f2104-8d21-4756-9819-e779339344c4';
+ const input={username:'guru_001',displayName:'Guru Contoh',role:'teacher'};
+ try{
+  for(const [data,status] of [
+   [{account:{id:key,username:'guru_001',displayName:'Guru Contoh',
+     role:'teacher',active:true,mustChangePassword:true},
+     temporaryPassword:null,alreadyCompleted:true},201],
+   [{account:{id:key,username:'guru_001',displayName:'Guru Contoh',
+     role:'teacher',active:true,mustChangePassword:true},
+     temporaryPassword:'A'.repeat(40),alreadyCompleted:false},200],
+   [null,200]
+  ]){
+   globalThis.fetch=async()=>new Response(JSON.stringify(data===null?null:{data}),{
+    status,headers:{'Content-Type':'application/json'}
+   });
+   await assert.rejects(createStaffAccount(input,'csrf',key),
+    e=>e instanceof AccountRequestError&&e.code==='UNKNOWN_RESPONSE');
+  }
+ }finally{globalThis.fetch=original;}
+});
