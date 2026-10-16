@@ -24,8 +24,17 @@ jobs:
         run: |
           node --check scripts/bootstrap-admin.mjs
           node --check scripts/hosted-smoke.mjs
+          node --check scripts/qa/localAuthProbe.mjs
+          node --check scripts/qa/localSessionE2E.mjs
+          node --check scripts/qa/localRoleE2E.mjs
       - name: Validate public Pages bindings
         run: node scripts/check-wrangler-config.mjs
+      - name: Independent AST security lint
+        run: npm run lint
+      - name: Source whitespace format gate
+        run: npm run format:check
+      - name: Locked Prettier JSON formatting baseline
+        run: npm run format:standard:check
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
@@ -34,14 +43,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Parse Windows administrator bootstrap without secrets
+      - name: Parse Windows operator scripts without running Docker or secrets
         shell: pwsh
         run: |
-          $tokens = $null
-          $parseErrors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile("scripts/bootstrap-admin.ps1", [ref]$tokens, [ref]$parseErrors) | Out-Null
-          if ($parseErrors.Count -gt 0) {
-            $parseErrors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+          foreach ($path in @("scripts/bootstrap-admin.ps1", "scripts/qa-local-auth.ps1", "scripts/ops/Backup-PortalGenius.ps1")) {
+            $tokens = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              $parseErrors | ForEach-Object { Write-Error "$path - $($_.Message)" }
+              exit 1
+            }
+            Write-Host "WINDOWS_OPERATOR_SCRIPT_SYNTAX_PASS: $path"
           }
-          Write-Host "WINDOWS_BOOTSTRAP_SYNTAX_PASS"

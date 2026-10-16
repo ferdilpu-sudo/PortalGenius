@@ -1,4 +1,10 @@
 export function isTrustedMutation(request:Request,allowedOrigin:string):boolean {
+  // A Preview deployment can inherit Production environment variables.
+  // The request target itself must be the configured application origin,
+  // not merely a forged Origin or Referer header.
+  try {
+    if(new URL(request.url).origin!==allowedOrigin)return false;
+  }catch{return false;}
   const origin=request.headers.get('Origin');
   if(origin)return origin===allowedOrigin;
   const referer=request.headers.get('Referer');

@@ -1,0 +1,142 @@
+# M-002C2A — Staff account provisioning, gated
+
+Tanggal: 15 Oktober 2026  
+PR: https://github.com/ferdilpu-sudo/PortalGenius/pull/6  
+Status: **IN PROGRESS — no new accounts provisioned; default locked.**
+
+## M002C1 operator acceptance
+
+Operator confirmed `MENU M002C1 PASS`: empty Student/Teacher/Assignment lists and the one administrator account appear as expected on Production main.
+
+## Scope of this increment
+
+- `pg_m002c2_attach_account`: service_role-only atomic linkage of a user that the backend previously created in Supabase Auth. Requires existing active admin, admin-owned Auth user with `managed_by=portalgenius`, confirmed matching Auth alias, normalized unique username, and one of teacher/counselor/principal. **Cannot grant admin role** through routine staff provisioning.
+- `pg_m002c2_provision_result`: service_role-only idempotency lookup that compares complete input payload, rejecting key reuse with different username, display name, alias or role.
+- Password generated via Web Crypto CSPRNG, 30 random bytes encoded base64url (40 characters). No password supplied by client JSON. Password returned only on successful first completion; retries do not reissue it.
+- Supabase Auth created first; atomic database bind second. On error, check idempotency record before considering cleanup. Only delete a new Auth identity when the DB outcome is known not to be committed. Unknown outcome blocks with `PROVISION_RECONCILIATION_REQUIRED`, requiring operator investigation.
+- Backend POST `/api/v1/accounts/create`: admin session, Origin, CSRF, idempotency and body validation. **Not exposed in UI**.
+- Feature gate `ACCOUNT_PROVISIONING_ENABLED` omitted from `wrangler.toml`. Default disabled. Even if set accidentally, primary Production `https://portalgenius.pages.dev` is hard-blocked in code. Enabling production later requires separate code review.
+
+## Verification
+
+| Gate | Outcome |
+| --- | --- |
+| SQL rollback: successful link and exact-key retry | PASS |
+| Duplicate username / mismatched key | REJECTED |
+| Attempt to create administrator role via staff provisioning | REJECTED |
+| Non-admin actor and unmanaged/self-signup Auth identity | REJECTED |
+| Atomic audit/role/login identity, DB unchanged after rollback | PASS |
+| Database migration version | `20261015132818` APPLIED |
+| RPC EXECUTE for anon/authenticated | DENIED |
+| Live account count | 1 administrator (unchanged) |
+| Node unit tests of provisioning, cleanup, unknown outcomes, negative route | PASS in Quality CI |
+| Cloudflare Preview, unsigned/anonymous probes | 5/5 PASS |
+| Authenticated staff creation in hosted environment | **NOT RUN, intentionally locked** |
+| Real new teacher/student account | **NOT CREATED** |
+
+Preview smoke evidence: https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38743208079
+
+## Open decisions and release gates
+
+1. **Email alias strategy (operator answered: staff have no emails):** no personal or institution-owned staff email is required in the UI. The backend proposes deterministic per-request identities `pg-<uuid-without-hyphens>@auth.portalgenius.invalid` using the RFC 2606 reserved, non-deliverable `.invalid` domain. This is a technical Auth identifier, **not a verified mailbox** and not a recovery channel. The account creation form accepts only username, displayName and role. **Supabase GoTrue acceptance of .invalid has not been verified in hosted Auth**; do not enable provisioning until a bounded test in an isolated QA project confirms create/login/delete. If rejected, stop and revisit the backend identity architecture: do not fabricate Gmail accounts or substitute a real third-party domain.
+2. Verify Supabase Auth public signup disabled. Current connector does not expose the setting. Operator should confirm in project dashboard.
+3. Perform hosted end-to-end role isolation using synthetic teacher A/B, counselor A/B, principal with cleanup; avoid real student data.
+4. Execute true concurrent HTTP refresh and replay of revoked cookie under [issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2). Never use the administrator's live cookie for destructive test.
+5. Configure separate non-production Preview origin + secrets for authenticated staging, review audit monitoring, then enable account provisioning only there for a bounded test.
+6. Build staff creation UI only after gates; then implement student/teacher records and assignment forms with referential date scope and negative tests.
+7. Supabase Leaked Password Protection remains an explicitly accepted plan limitation from M-001, **not** a PASS.
+
+This PR should remain Draft. **Do not merge or activate on Production** at this checkpoint.
+
+## Keputusan emailless — 15 Oktober 2026
+
+Pengguna menegaskan bahwa setiap guru dan konselor **tidak memiliki email**. Kontrak API di PR #6 diperbarui: `authEmail` dan `email` ditolak jika dikirim dari browser. Backend sendiri menghasilkan alias unik memakai kunci idempotensi UUID dan domain RFC-reserved `.invalid`. Login PortalGenius tetap berbasis username dan password melalui pemetaan internal Auth.
+
+**Batasan keamanan dan operasional:** tidak ada pengiriman email, undangan, tautan reset, OTP email, atau pemulihan otomatis untuk staf. Perlu dibuat prosedur **reset password oleh administrator** (verifikasi identitas manual, password sementara acak, wajib ganti saat login, pencabutan semua sesi, audit, pembatasan percobaan). Identitas staf harus bisa dinonaktifkan dan dipulihkan tanpa mengubah NIS/relasi penugasan. Prosedur *last-admin recovery* harus didokumentasikan secara terpisah.
+
+**Belum diuji**: kompatibilitas email `.invalid` pada Supabase Auth yang sebenarnya. Jangan klaim address teknis diterima hingga pengujian QA terisolasi lulus. Penutupan PR/Draft tetap diblokir. Referensi teknis: https://supabase.com/docs/reference/javascript/auth-admin-createuser dan https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid.
+
+## M-002C2B — Reset password oleh administrator tanpa email (15 Oktober 2026)
+
+Operator memilih mode akun staf tanpa email. Pemulihan password tidak menggunakan link email ataupun OTP email.
+
+### Implementasi
+- `private.staff_password_reset_ops` adalah jurnal dua fase (pending/completed), dengan RLS deny-by-default dan satu operasi pending maksimum per pengguna.
+- `pg_m002c2_begin_staff_password_reset` hanya bisa dijalankan service_role untuk target non-admin PortalGenius aktif yang beridentitas teknis. Ia memeriksa admin operator, mengecualikan reset diri, mewajibkan target punya role staf, menandai `must_change_password=true`, mencabut sesi aplikasi target, serta mencatat audit dalam satu transaksi.
+- `pg_m002c2_complete_staff_password_reset` mencatat audit selesai setelah backend menerima sukses dari Supabase Auth Admin password update. Reuse operasi atau operasi yang bukan milik actor ditolak.
+- `POST /api/v1/accounts/reset-password`: Origin, sesi login, CSRF, role admin, feature gate sama dengan provisioning. Tidak ada tombol UI. Fitur **OFF** pada Production, bahkan bila variable opt-in keliru diisi.
+- Password sementara CSPRNG hanya dikembalikan setelah operasi `complete` berhasil. Timeout/failure mempertahankan operasi pending, tidak mengungkap password yang belum bisa dijamin berlaku, dan membutuhkan peninjauan manual.
+
+### Bukti verifikasi
+
+- Migrasi Supabase `20261015154828_m002c2_staff_password_reset`: **APPLIED**.
+- SQL rollback setelah penerapan migrasi: nonadmin rejected, admin self-reset rejected, revoked old app session, must-change flag, one pending per target, double-complete rejected, dua event audit, privileges denied untuk anon/authenticated: **PASS**. Satu administrator nyata tetap tidak disentuh.
+- Supabase read-only: 1 akun saat ini, 0 reset operations tersimpan.
+- CI terbaru [Quality 51/51 unit PASS, npm audit 0, build PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38763749032).
+- Cloudflare Preview [7/7 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38763738523): HTML, health, accounts anon, origin asing + no-cookie untuk provision dan reset. Tidak ada mutasi terhadap akun nyata.
+
+### Gate yang masih BLOCKED / NOT RUN
+
+1. **Kompatibilitas lokal Supabase Auth dengan alias `.invalid`: PASS (16 Oktober 2026)**, dibuktikan operator melalui Docker yang terisolasi. **Hosted parity masih NOT RUN.** Jangan uji langsung pada PortalGenius atau LayarBelajar.
+2. Pengujian backend penuh end-to-end dengan akun sintetis guru A/B, konselor, principal; create + login + password change + reset + cleanup pada QA: NOT RUN.
+3. HTTP cookie replay setelah revoke, true concurrent refresh, public signup disabled: NOT RUN ([issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2)).
+4. Workflow recovery manual untuk operasi reset yang pending/unknown: desain fail-closed tersedia, tetapi prosedur rekonsiliasi eksplisit belum dibuat. Jangan aktifkan reset sampai siap.
+5. Staff create UI, guru/siswa, class/enrollment/assignment mutasi: NOT RUN. Data siswa nyata tetap dilarang sebelum gate role isolation.
+
+**Keputusan:** PR #6 tetap **Draft**. Migrasi telah diterapkan tanpa mengubah akun aktif; kode fitur account provisioning/reset hanya ada pada branch. Jangan mengaktifkan `ACCOUNT_PROVISIONING_ENABLED` di Production.
+
+## QA lokal menggunakan Docker Desktop (15 Oktober 2026)
+
+Operator telah memastikan Docker Desktop tersedia. Script Windows `scripts/qa-local-auth.ps1` dengan panduan [isolated QA](../qa/m002c2-local-auth-provider.md) sudah ditambahkan.
+
+- Membuat proyek Supabase sementara terpisah dengan project ID unik dan API di `http://127.0.0.1:55321`; tidak ada Supabase login, link, db push atau kredensial produksi.
+- Enam uji Auth provider: pembuatan technical alias `.invalid`, login, update password, penolakan password lama, login baru, hapus akun dan penolakan login setelah penghapusan (enam checkpoint keseluruhan; penghapusan dan pasca-penghapusan diuji sebagai langkah terpisah).
+- Kunci CLI dari `supabase status -o env` hanya digunakan di proses lokal; tidak boleh dibagikan ke chat atau GitHub.
+- CLI QA hanya menghentikan project sementara miliknya sendiri dengan `supabase stop --no-backup`, bukan proyek lokal lain.
+- CI Node serta parser PowerShell Windows sudah lulus. **Operator menjalankan QA Docker lokal pada 16 Oktober 2026 dan melaporkan PASS.** Gate provider hosted masih NOT RUN.
+
+Production provisioning dan reset tetap dikunci; PR #6 Draft.
+
+## Operator verification — 16 Oktober 2026
+
+`LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed` dan `LOCAL_AUTH_QA_STOP: stopping only our isolated project` dilaporkan dari Windows PowerShell. Log memuat keberhasilan pembuatan identitas sintetis dengan alias teknis, sign-in, admin credential update, penolakan credential lama, sign-in credential baru, penghapusan identitas sintetis dan penolakan login setelah penghapusan. **QA lokal PASS; hosted Auth parity belum diuji.** PR #6 tetap Draft, provisioning dan reset pada Production tetap terkunci.
+
+## Operator checkpoint — 16 October 2026, extended local Auth QA
+
+`LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed` and `LOCAL_AUTH_QA_STOP: stopping only our isolated project` were reported from Windows Docker. Local Auth public signup denial and simultaneous refresh on independent clients are PASS. This **does not close** GitHub issue #2's revoked cookie replay, real application BFF lease concurrency or hosted signup setting. No real staff accounts or student records were created. PR #6 remains Draft and Production provisioning/reset stays locked.
+
+## M-002C2C — Local BFF session HTTP harness (16 October 2026)
+
+New opt-in `-SessionE2E` mode added to `scripts/qa-local-auth.ps1`, which runs the already validated Auth provider suite first then prepares only M-001 session migrations plus local-only fixture SQL in its unique disposable Docker project. A Node HTTP server binds only to `127.0.0.1:55325` and calls the real Pages login/session/logout handlers. The runner tests revoked-cookie HTTP 401, cross-origin rejection, A/B identity separation, concurrent near-expired refresh/one version transition, bounded busy lease and logout replay. Synthetic users are unbound and removed before isolated Docker cleanup. CI Quality [54/54 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38853780015) validates code, not actual Docker endpoint behavior. **Local BFF operator test PASSED on 16 October 2026**, expected `LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed`. Full cloud browser/hosted parity and role/student assignment matrix still NOT RUN. PR remains Draft; Production feature gate OFF.
+
+## Operator acceptance — LOCAL BFF SESSION E2E PASS (16 October 2026)
+
+After updating the QA branch, the operator ran `powershell -NoProfile -File .\scripts\qa-local-auth.ps1 -SessionE2E` on Windows Docker, reporting:
+
+```text
+LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed
+PASS BFF login and session on isolated local HTTP
+PASS BFF simultaneous requests keep teacher A/B identities separate
+PASS BFF hostile Origin refused without revoking session
+PASS BFF revoked cookie replay denied HTTP 401, teacher B unaffected
+PASS BFF concurrent near-expiry HTTP refresh commits one lease/version
+PASS BFF lease busy bounded and logout replay HTTP 401
+LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed
+LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+**Accepted:** locally hosted PortalGenius handler HTTP session replay after revoke, per-user isolation for two synthetic teachers, malicious Origin rejection, parallel refresh version/lease guard, bounded lease busy and logout replay; synthetic staff cleanup. The script's `5 gates` aggregate label covers six individual BFF PASS lines. Auth provider 9-check suite also passed locally.
+
+**Still open:** real deployed Cloudflare Pages (hosted) parity; the hosted Supabase signup-off setting; HTTP student/assignment scoping across teacher A/B, counselor A/B and principal; admin reset-pending manual reconciliation; authentic browser-cookie behavior; lint/format gates. Local PASS is not proof of those. Keep PR #6 Draft and Production provisioning/password reset OFF.
+
+## M-002C2D — perbaikan percobaan untuk SQLSTATE 21000 (16 Oktober 2026)
+
+Log runtime menempatkan cardinality error `21000` pada perintah bulk DELETE
+`public.assignment_students` di QA Docker; setelah itu proses penghapusan
+akun sengaja dilewati karena dependensi belum bersih. Implementasi baru
+menghapus relasi sintetis per kunci utama dengan urutan anak-ke-induk dalam
+satu transaksi RPC, dan tetap BLOCKED jika suatu baris atau cleanup gagal.
+Ini hanya mengubah SQL di `scripts/qa/localRoleScopeFixtures.sql`, bukan
+`supabase/migrations`. [CI 59/59 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38866780711).
+**Operator belum mengulangi QA Docker; jangan klaim M-002C2D PASS.**
