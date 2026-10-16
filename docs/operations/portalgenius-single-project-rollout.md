@@ -117,3 +117,40 @@ project/host, signup enabled and redirects; **CI never invokes the live
 GET requests**. The existing separate hosted QA runner remains retained
 as non-release legacy material and should not be used to claim
 an isolated environment exists.
+
+## Operator live preflight — signup still enabled (16 October 2026)
+
+The Windows operator executed `npm run qa:production:readonly` from
+`PortalGenius-PR6-Review` at commit `621b869` after a clean
+`npm ci`, **101/101 unit PASS** and local build PASS.
+
+The command output was **`PRODUCTION_PUBLIC_SIGNUP_NOT_DISABLED`**.
+Because the script checks the PortalGenius health payload first and
+then Supabase Auth `/auth/v1/settings`, this confirms the health probe
+passed and the live Auth server did **not** return
+`disable_signup=true`. It is a **hosted security gate BLOCKED**, not
+an infrastructure/test failure that can be ignored.
+
+Required operator dashboard action (no database SQL / account fixture):
+
+1. Open
+   `https://supabase.com/dashboard/project/vpglikrkvsnoyjvluigs/auth/providers`
+   for the **Portal Genius** project only.
+2. Find the global **Allow new users to sign up** option and switch it
+   **OFF**, saving the configuration. Do **not** disable the Email
+   provider or password sign-in; existing username/password logins must
+   remain functional. UI labels may vary.
+3. Rerun `npm run qa:production:readonly` from the checked-out PR
+   branch and record just PASS/BLOCKED labels, without passwords,
+   cookies, API keys or full Auth settings responses.
+4. Independently confirm existing administrator login after the
+   setting change before merge/production activation. The preflight
+   does not exercise login and a read-only PASS cannot replace
+   interactive operator acceptance.
+
+Source: https://supabase.com/docs/guides/auth/general-configuration
+
+**Do not enable the two Production provisioning release flags,
+merge PR #6, run synthetic hosted QA or create a staff account** merely
+to resolve this finding. The Supabase project itself has not been
+modified through the project tooling in this step.
