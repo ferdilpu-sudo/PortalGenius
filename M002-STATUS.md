@@ -118,3 +118,9 @@ file JSON konfigurasi. **Bukan** formatter repo-wide atau ESLint penuh.
 **PASS (77/77 tes, Prettier PASS, typecheck/build PASS, audit 0)**.
 Hosted E1/E2 tetap NOT RUN karena tidak ada Supabase QA + Cloudflare QA
 terisolasi, sementara PR #6 tetap Draft dan fitur Production create/reset OFF.
+
+## M-002C2E — Hosted QA project quota BLOCKED (16 Oktober 2026)
+
+Operator menyetujui biaya **US$0/bulan** untuk proyek Supabase `portalgenius-qa`, organisasi terhubung, region `ap-northeast-1`. Pemeriksaan biaya Supabase `get_cost` mengembalikan monthly amount `0`, lalu `confirm_cost` sukses. Namun, panggilan `create_project` ditolak oleh Supabase karena pemilik organisasi telah mencapai batas **2 active free projects**. Pemeriksaan ulang `list_projects` menampilkan hanya dua proyek semula: `Portal Genius` dan `layarbelajar-staging`, keduanya aktif; **tidak ada proyek QA baru dibuat**.
+
+**Keputusan keamanan:** jangan menjeda/menghapus salah satu proyek yang ada, tidak meng-upgrade organisasi dan tidak menggunakan proyek Production ataupun LayarBelajar sebagai Hosted QA. E1 Hosted preflight dan E2 synthetic hosted E2E tetap **BLOCKED** sampai kapasitas QA independen tersedia dengan persetujuan operator. PR #6 tetap Draft dan akun create/reset Production OFF. CLI/Docker QA lokal sebelumnya tetap menjadi bukti terpisah, bukan Hosted PASS.
