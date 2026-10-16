@@ -187,7 +187,6 @@ async function main() {
   const after=await call('/api/v1/auth/session',{cookie:freshCookie});
   check(after.status===401,'LEASE_REVOKE_RACE_REPLAY');
   console.log('PASS BFF lease busy bounded and logout replay HTTP 401');
-  console.log('LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed');
  }finally{
   if(serverStarted)await new Promise(done=>web.close(done));
   else web.close();
@@ -201,6 +200,7 @@ async function main() {
   if(failed)throw new Error('LOCAL_BFF_QA_CLEANUP_FAILED');
   console.log('LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed');
  }
+ console.log('LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed');
 }
 main().catch(e=>{
  const message=e instanceof Error?e.message:'UNKNOWN';
