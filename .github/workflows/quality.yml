@@ -24,6 +24,9 @@ jobs:
         run: |
           node --check scripts/bootstrap-admin.mjs
           node --check scripts/hosted-smoke.mjs
+          node --check scripts/qa/localAuthProbe.mjs
+          node --check scripts/qa/localSessionE2E.mjs
+          node --check scripts/qa/localRoleE2E.mjs
       - name: Validate public Pages bindings
         run: node scripts/check-wrangler-config.mjs
       - run: npm run typecheck
