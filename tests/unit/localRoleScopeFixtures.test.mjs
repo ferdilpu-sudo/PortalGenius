@@ -22,6 +22,12 @@ test('role E2E uses all six synthetic roles and guarded student scope assertions
   'SCOPE_MISMATCH_','PRINCIPAL_STUDENTS_NOT_DENIED',
   'ANON_DIRECT_TABLE_ALLOWED','AUTHENTICATED_DIRECT_TABLE_ALLOWED','ACTOR_SPOOF'
  ])assert.ok(runner.includes(identifier),identifier);
+ for(const marker of [
+  'LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC',
+  'SCOPES_CLEAR','_UNBIND','_AUTH_DELETE','LOCAL_ROLE_QA_CLEANUP_FAILED'
+ ])assert.ok(runner.includes(marker),marker);
+ assert.doesNotMatch(runner,/console\.error\(.*?\.message.*?\)/,
+   'cleanup must never log provider or database error messages');
  const cleanup=runner.indexOf('LOCAL_ROLE_QA_CLEANUP_PASS');
  const result=runner.indexOf('LOCAL_ROLE_E2E_QA_PASS');
  assert.ok(cleanup>0&&cleanup<result,'completion marker must follow cleanup');
