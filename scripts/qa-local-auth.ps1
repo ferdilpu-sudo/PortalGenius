@@ -10,18 +10,28 @@ $workspace = Join-Path ([IO.Path]::GetTempPath()) "PortalGenius-Auth-QA-$tag"
 $expectedApi = 'http://127.0.0.1:55321'
 $initialized = $false
 $created = $false
+$safeToRemoveWorkspace = $true
 
 function Assert-Command($name) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
         throw "LOCAL_QA_PREREQUISITE_MISSING: $name"
     }
 }
-function Invoke-LocalCli([string[]]$arguments) {
-    # Hide CLI's local JWT/service-role credentials from terminal and logs.
-    & npx.cmd --yes "supabase@$cliVersion" @arguments 1>$null 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "LOCAL_QA_SUPABASE_COMMAND_FAILED: $($arguments[0])"
+function Invoke-LocalCli([string[]]$arguments, [switch]$CaptureOutput) {
+    # Windows PowerShell 5.1 converts native stderr into an ErrorRecord even
+    # with 2>$null. A harmless CLI update notice must not terminate the script.
+    # Suppress local credentials and notices, but ALWAYS check the exit code.
+    $ErrorActionPreference = 'Continue'
+    if ($CaptureOutput) {
+        $lines = @(& npx.cmd --yes "supabase@$cliVersion" @arguments 2>$null)
+    } else {
+        & npx.cmd --yes "supabase@$cliVersion" @arguments 1>$null 2>$null
     }
+    $cliExitCode = $LASTEXITCODE
+    if ($cliExitCode -ne 0) {
+        throw "LOCAL_QA_SUPABASE_COMMAND_FAILED: $($arguments[0]) (exit $cliExitCode)"
+    }
+    if ($CaptureOutput) { return $lines }
 }
 function Set-LocalPort([string]$text, [int]$oldPort, [int]$newPort) {
     $pattern = "(?m)^(\s*port\s*=\s*)$oldPort(?=\s*(?:#.*)?$)"
@@ -103,8 +113,7 @@ try {
         $initialized = $true # Also clean up containers after partially failed startup.
         Invoke-LocalCli @('start','--exclude',
           'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
-        $lines = & npx.cmd --yes "supabase@$cliVersion" status -o env 2>$null
-        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_QA_STATUS_FAILED' }
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
         $values = @{}
         foreach ($line in @($lines)) {
             if ($line -match '^([A-Z_]+)=(.*)$') {
@@ -129,15 +138,17 @@ try {
         }
         if ($initialized) {
             Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
-            & npx.cmd --yes "supabase@$cliVersion" stop --no-backup 1>$null 2>$null
-            if ($LASTEXITCODE -ne 0) {
-                Write-Warning "LOCAL_QA_STOP_FAILED: isolated Docker project $projectId may need manual stop"
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
             }
         }
         Pop-Location
     }
 } finally {
-    if ($created -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
         # Delete only the uniquely generated empty-purpose workspace.
         # Local container data are already cleared by stop --no-backup above.
         Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
