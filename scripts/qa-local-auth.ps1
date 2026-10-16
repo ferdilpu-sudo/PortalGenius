@@ -108,6 +108,261 @@ try {
                 throw "LOCAL_QA_REQUIRED_PORT_NOT_FOUND: $($pair[0])"
             }
         }
+        # Disable anonymous Auth signup in the isolated local stack.
+        # This tests a local policy; hosted Supabase must be checked separately.
+        $authHeader = [regex]::Match($config, '(?m)^\[auth\]\s*
+
+        $initialized = $true # Also clean up containers after partially failed startup.
+        Invoke-LocalCli @('start','--exclude',
+          'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
+        $values = @{}
+        foreach ($line in @($lines)) {
+            if ($line -match '^([A-Z_]+)=(.*)$') {
+                $values[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+            }
+        }
+        if ($values['API_URL'] -ne $expectedApi) {
+            throw 'LOCAL_QA_ENDPOINT_MISMATCH'
+        }
+        if (-not $values['ANON_KEY'] -or -not $values['SERVICE_ROLE_KEY']) {
+            throw 'LOCAL_QA_STATUS_KEYS_MISSING'
+        }
+        $env:PG_QA_LOCAL_URL = $values['API_URL']
+        $env:PG_QA_LOCAL_ANON_KEY = $values['ANON_KEY']
+        $env:PG_QA_LOCAL_SERVICE_KEY = $values['SERVICE_ROLE_KEY']
+        Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
+        & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
+        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+    } finally {
+        foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        }
+        if ($initialized) {
+            Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
+            }
+        }
+        Pop-Location
+    }
+} finally {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+        # Delete only the uniquely generated empty-purpose workspace.
+        # Local container data are already cleared by stop --no-backup above.
+        Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+)
+        if (-not $authHeader.Success) { throw 'LOCAL_QA_AUTH_SECTION_MISSING' }
+        $nextSection = [regex]::Match(
+            $config, '(?m)^\[[^\]]+\]\s*
+
+        $initialized = $true # Also clean up containers after partially failed startup.
+        Invoke-LocalCli @('start','--exclude',
+          'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
+        $values = @{}
+        foreach ($line in @($lines)) {
+            if ($line -match '^([A-Z_]+)=(.*)$') {
+                $values[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+            }
+        }
+        if ($values['API_URL'] -ne $expectedApi) {
+            throw 'LOCAL_QA_ENDPOINT_MISMATCH'
+        }
+        if (-not $values['ANON_KEY'] -or -not $values['SERVICE_ROLE_KEY']) {
+            throw 'LOCAL_QA_STATUS_KEYS_MISSING'
+        }
+        $env:PG_QA_LOCAL_URL = $values['API_URL']
+        $env:PG_QA_LOCAL_ANON_KEY = $values['ANON_KEY']
+        $env:PG_QA_LOCAL_SERVICE_KEY = $values['SERVICE_ROLE_KEY']
+        Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
+        & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
+        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+    } finally {
+        foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        }
+        if ($initialized) {
+            Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
+            }
+        }
+        Pop-Location
+    }
+} finally {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+        # Delete only the uniquely generated empty-purpose workspace.
+        # Local container data are already cleared by stop --no-backup above.
+        Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+,
+            [System.Text.RegularExpressions.RegexOptions]::Multiline
+        )
+        # Match the top-level auth section up to the next TOML section.
+        $sectionStart = $authHeader.Index + $authHeader.Length
+        $sectionTail = $config.Substring($sectionStart)
+        $nextHeader = [regex]::Match($sectionTail, '(?m)^\[[^\]]+\]\s*
+
+        $initialized = $true # Also clean up containers after partially failed startup.
+        Invoke-LocalCli @('start','--exclude',
+          'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
+        $values = @{}
+        foreach ($line in @($lines)) {
+            if ($line -match '^([A-Z_]+)=(.*)$') {
+                $values[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+            }
+        }
+        if ($values['API_URL'] -ne $expectedApi) {
+            throw 'LOCAL_QA_ENDPOINT_MISMATCH'
+        }
+        if (-not $values['ANON_KEY'] -or -not $values['SERVICE_ROLE_KEY']) {
+            throw 'LOCAL_QA_STATUS_KEYS_MISSING'
+        }
+        $env:PG_QA_LOCAL_URL = $values['API_URL']
+        $env:PG_QA_LOCAL_ANON_KEY = $values['ANON_KEY']
+        $env:PG_QA_LOCAL_SERVICE_KEY = $values['SERVICE_ROLE_KEY']
+        Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
+        & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
+        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+    } finally {
+        foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        }
+        if ($initialized) {
+            Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
+            }
+        }
+        Pop-Location
+    }
+} finally {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+        # Delete only the uniquely generated empty-purpose workspace.
+        # Local container data are already cleared by stop --no-backup above.
+        Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+)
+        $sectionEnd = if ($nextHeader.Success) {
+            $sectionStart + $nextHeader.Index
+        } else { $config.Length }
+        $authBody = $config.Substring($sectionStart, $sectionEnd - $sectionStart)
+        if (-not [regex]::IsMatch($authBody, '(?m)^\s*enable_signup\s*=\s*(true|false)\s*(?:#.*)?
+
+        $initialized = $true # Also clean up containers after partially failed startup.
+        Invoke-LocalCli @('start','--exclude',
+          'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
+        $values = @{}
+        foreach ($line in @($lines)) {
+            if ($line -match '^([A-Z_]+)=(.*)$') {
+                $values[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+            }
+        }
+        if ($values['API_URL'] -ne $expectedApi) {
+            throw 'LOCAL_QA_ENDPOINT_MISMATCH'
+        }
+        if (-not $values['ANON_KEY'] -or -not $values['SERVICE_ROLE_KEY']) {
+            throw 'LOCAL_QA_STATUS_KEYS_MISSING'
+        }
+        $env:PG_QA_LOCAL_URL = $values['API_URL']
+        $env:PG_QA_LOCAL_ANON_KEY = $values['ANON_KEY']
+        $env:PG_QA_LOCAL_SERVICE_KEY = $values['SERVICE_ROLE_KEY']
+        Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
+        & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
+        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+    } finally {
+        foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        }
+        if ($initialized) {
+            Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
+            }
+        }
+        Pop-Location
+    }
+} finally {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+        # Delete only the uniquely generated empty-purpose workspace.
+        # Local container data are already cleared by stop --no-backup above.
+        Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+)) {
+            throw 'LOCAL_QA_ENABLE_SIGNUP_CONFIG_MISSING'
+        }
+        $authBody = [regex]::Replace($authBody,
+            '(?m)^(\s*enable_signup\s*=\s*)(true|false)(\s*(?:#.*)?)
+
+        $initialized = $true # Also clean up containers after partially failed startup.
+        Invoke-LocalCli @('start','--exclude',
+          'studio,realtime,storage-api,imgproxy,postgres-meta,edge-runtime,logflare,vector,supavisor')
+        $lines = @(Invoke-LocalCli -arguments @('status','-o','env') -CaptureOutput)
+        $values = @{}
+        foreach ($line in @($lines)) {
+            if ($line -match '^([A-Z_]+)=(.*)$') {
+                $values[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
+            }
+        }
+        if ($values['API_URL'] -ne $expectedApi) {
+            throw 'LOCAL_QA_ENDPOINT_MISMATCH'
+        }
+        if (-not $values['ANON_KEY'] -or -not $values['SERVICE_ROLE_KEY']) {
+            throw 'LOCAL_QA_STATUS_KEYS_MISSING'
+        }
+        $env:PG_QA_LOCAL_URL = $values['API_URL']
+        $env:PG_QA_LOCAL_ANON_KEY = $values['ANON_KEY']
+        $env:PG_QA_LOCAL_SERVICE_KEY = $values['SERVICE_ROLE_KEY']
+        Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
+        & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
+        if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+    } finally {
+        foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
+            Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+        }
+        if ($initialized) {
+            Write-Host 'LOCAL_AUTH_QA_STOP: stopping only our isolated project'
+            try {
+                Invoke-LocalCli -arguments @('stop','--no-backup')
+            } catch {
+                $safeToRemoveWorkspace = $false
+                Write-Warning "LOCAL_QA_STOP_FAILED: isolated project $projectId needs manual cleanup at $workspace"
+            }
+        }
+        Pop-Location
+    }
+} finally {
+    if ($created -and $safeToRemoveWorkspace -and (Test-Path $workspace) -and -not (Test-Path (Join-Path $workspace 'keep-qa-workspace'))) {
+        # Delete only the uniquely generated empty-purpose workspace.
+        # Local container data are already cleared by stop --no-backup above.
+        Remove-Item -LiteralPath $workspace -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+,
+            '${1}false${3}')
+        $config = $config.Substring(0, $sectionStart) + $authBody +
+            $config.Substring($sectionEnd)
+        Write-Host 'LOCAL_QA_AUTH_SIGNUP_DISABLED: isolated Docker project only'
         [IO.File]::WriteAllText($configPath, $config, [Text.UTF8Encoding]::new($false))
 
         $initialized = $true # Also clean up containers after partially failed startup.

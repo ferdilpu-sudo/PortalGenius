@@ -36,6 +36,21 @@ async function main() {
   let createdId = null;
   let cleaned = false;
   try {
+    // Public registration is explicitly disabled in the isolated CLI config.
+    // The test must verify the Auth HTTP endpoint actually enforces it.
+    const signupEmail = technicalAuthAlias(randomUUID());
+    const unauthorizedSignup = await anonymous.auth.signUp({
+      email: signupEmail, password: newTemporaryPassword()
+    });
+    if (!unauthorizedSignup.error) {
+      if (unauthorizedSignup.data.user?.id) {
+        const cleanup = await admin.auth.admin.deleteUser(unauthorizedSignup.data.user.id);
+        if (cleanup.error) throw new Error('LOCAL_QA_UNEXPECTED_SIGNUP_CLEANUP_FAILED');
+      }
+      throw new Error('LOCAL_QA_PUBLIC_SIGNUP_UNEXPECTEDLY_ENABLED');
+    }
+    console.log('PASS local Auth public sign-up disabled at HTTP endpoint');
+
     const created = await admin.auth.admin.createUser({
       email, password: initialPassword, email_confirm: true,
       app_metadata: {
@@ -59,6 +74,29 @@ async function main() {
     if (first.error || first.data.user?.id !== createdId)
       throw new Error('LOCAL_QA_INITIAL_SIGNIN_FAILED');
     console.log('PASS local Auth initial username-mapped sign-in');
+
+    // Independent clients ensure refresh calls do not share the client mutex.
+    // Test only Supabase Auth token rotation, NOT the PortalGenius BFF lease.
+    const refreshToken = first.data.session?.refresh_token;
+    if (!refreshToken) throw new Error('LOCAL_QA_REFRESH_TOKEN_MISSING');
+    const [refreshOne,refreshTwo] = await Promise.all([
+      localClient(url,anonKey).auth.refreshSession({refresh_token:refreshToken}),
+      localClient(url,anonKey).auth.refreshSession({refresh_token:refreshToken})
+    ]);
+    const successful = [refreshOne,refreshTwo].filter(v=>!v.error && v.data.session);
+    if (successful.length < 1) throw new Error('LOCAL_QA_CONCURRENT_REFRESH_ALL_FAILED');
+    for (const item of successful) {
+      if (item.data.user?.id !== createdId ||
+          item.data.session?.user?.id !== createdId ||
+          !item.data.session?.access_token) {
+        throw new Error('LOCAL_QA_CONCURRENT_REFRESH_WRONG_IDENTITY');
+      }
+      const verified = await anonymous.auth.getUser(item.data.session.access_token);
+      if (verified.error || verified.data.user?.id !== createdId) {
+        throw new Error('LOCAL_QA_CONCURRENT_REFRESH_TOKEN_INVALID');
+      }
+    }
+    console.log('PASS local Auth simultaneous refresh keeps original account identity');
 
     const updated = await admin.auth.admin.updateUserById(
       createdId, { password: replacementPassword }
@@ -92,7 +130,7 @@ async function main() {
     if (!deletedLogin.error)
       throw new Error('LOCAL_QA_DELETED_USER_CAN_SIGNIN');
     console.log('PASS local Auth deleted user no longer signs in');
-    console.log('LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed');
+    console.log('LOCAL_AUTH_PROVIDER_QA_PASS: 8 checks; no hosted project accessed');
   } finally {
     if (createdId && !cleaned) {
       const cleanup = await admin.auth.admin.deleteUser(createdId);

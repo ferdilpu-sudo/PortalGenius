@@ -40,3 +40,9 @@ Even after local pass, PR #6 stays Draft until a separately approved, isolated *
 ## Operator result — 16 October 2026
 
 Windows Docker QA: `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed`. The operator verified technical alias acceptance, initial sign-in, admin credential rotation, old credential rejection, new sign-in, synthetic identity deletion, and refusal to sign in after deletion. The isolated local stack reported stopping. **Local provider compatibility PASS. Hosted and multi-role E2E remain NOT RUN.** PR #6 stays Draft and Production provisioning is locked.
+
+## Local provider gates added after the initial PASS
+
+The next local execution additionally checks that anonymous registration is rejected by the GoTrue HTTP endpoint when `[auth] enable_signup = false` is set **only in the temporary QA project**. It also runs simultaneous refresh requests using the same existing synthetic token from independent clients, ensuring at least one refresh succeeds and every successful result maps to the same Auth user. The results of these additional checks are **NOT YET RUN**; the earlier `6 checks` operator PASS remains valid.
+
+These tests do **not** prove hosted signup is disabled, nor do they prove PortalGenius application cookie replay or SQL refresh lease behavior through HTTP. Those continue to be separate release gates. The expected label for the extended harness is `LOCAL_AUTH_PROVIDER_QA_PASS: 8 checks; no hosted project accessed`.
