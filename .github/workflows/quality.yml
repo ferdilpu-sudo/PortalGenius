@@ -33,6 +33,8 @@ jobs:
         run: npm run lint
       - name: Source whitespace format gate
         run: npm run format:check
+      - name: Locked Prettier JSON formatting baseline
+        run: npm run format:standard:check
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
