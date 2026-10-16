@@ -207,3 +207,38 @@ PowerShell syntax** pada perubahan kode. PR #6 tetap Draft.
 Tidak ada migrasi, fixture, reset, atau provisioning pada Production;
 kedua flag create tetap tidak terpasang dan reset selalu OFF.
 [Laporan review](docs/qa/m002c2-pr6-technical-security-review.md).
+
+## M-002C2G — Live Auth signup-off and administrator login PASS (16 Oktober 2026)
+
+Operator menjalankan `npm run qa:production:readonly` dua kali:
+hasil pertama **`PRODUCTION_PUBLIC_SIGNUP_NOT_DISABLED`**,
+hasil kedua setelah memperbaiki setelan Auth Supabase
+**`PRODUCTION_READ_ONLY_PREFLIGHT_PASS`**. Operator juga
+mengonfirmasi akun administrator lama masih berhasil login.
+Dengan demikian **API health Production + public signup OFF +
+login administrator = OPERATOR PASS**. Pemeriksaan ini tidak
+membuat/menghapus/mengubah akun atau data akademik.
+
+Pemeriksaan metadata read-only database PortalGenius menemukan
+21 tabel dengan RLS aktif. Sebanyak 19 tabel tidak mempunyai
+GRANT SELECT/WRITE langsung untuk peran `anon` atau
+`authenticated`; pada `accounts` dan `account_roles`, izin
+SELECT untuk `authenticated` dibatasi policy `auth.uid()`
+ke akun sendiri. Peringatan 19 tabel tanpa policy adalah informasi
+sesuai desain akses tertutup, bukan alasan membuka RLS publik.
+
+Perlindungan password bocor yang diperingatkan Security Advisor
+hanya tersedia di Supabase Pro dan lebih tinggi; tidak ada upgrade
+biaya yang disetujui. [Dokumentasi password security]
+(https://supabase.com/docs/guides/auth/password-security).
+Menurut dokumentasi Supabase, paket Free tidak mempunyai backup
+harian otomatis yang dijamin. **Backup/restorasi belum diverifikasi
+dan tetap gate OPEN**; demikian pula kesesuaian variabel deployment
+Cloudflare, penerimaan Auth alias non-deliverable pada hosted, dan
+first-real-user onboarding.
+
+[Checklist rilis Production]
+(docs/operations/portalgenius-production-release-checklist.md).
+PR #6 tetap Draft, belum merge, kedua flag create Production
+tetap unset dan password reset Production hard OFF. Tidak ada
+mutasi data Supabase dalam pekerjaan audit ini.
