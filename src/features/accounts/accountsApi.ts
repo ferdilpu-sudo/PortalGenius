@@ -1,12 +1,9 @@
 import type {ProvisionRequest} from '../../../contracts/accounts/provisionValidation.ts';
+import {validateStaffCreationResponse,type ValidatedStaffCreation} from '../../../contracts/accounts/staffCreateResponseValidation.ts';
 
 type Envelope<T>={data?:T;error?:{code:string;message:string}};
 export type StaffCapability={canCreateStaff:boolean;canResetStaff:boolean};
-export type StaffCreation={
- account:{id:string;username:string;displayName:string;role:ProvisionRequest['role'];
-  active:boolean;mustChangePassword:boolean};
- temporaryPassword:string|null;alreadyCompleted:boolean
-};
+export type StaffCreation=ValidatedStaffCreation;
 export class AccountRequestError extends Error{
  readonly code:string;
  constructor(code:string,message:string){
@@ -38,9 +35,12 @@ export async function createStaffAccount(input:ProvisionRequest,csrf:string,key:
   });
  }catch{throw new AccountRequestError('NETWORK_UNCERTAIN',
   'Hasil permintaan tidak diketahui. Periksa akun sebelum mencoba lagi.');}
- const body=await readBody<StaffCreation>(response);
- if(!response.ok||!body.data)
+ const body=await readBody<unknown>(response);
+ if(!response.ok)
   throw new AccountRequestError(body.error?.code??'UNKNOWN_RESPONSE',
    body.error?.message??'Hasil pembuatan akun tidak dapat dipastikan.');
- return body.data;
+ const validated=validateStaffCreationResponse(body.data,input);
+ if(!validated)throw new AccountRequestError('UNKNOWN_RESPONSE',
+  'Hasil pembuatan akun tidak cocok dengan permintaan. Periksa akun sebelum mencoba lagi.');
+ return validated;
 }
