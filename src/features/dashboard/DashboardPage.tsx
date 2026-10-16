@@ -43,7 +43,7 @@ export function DashboardPage({profile,csrf,onLogout,sessionError}:{
     activePage==='classes'?<ClassesPage csrf={csrf}/>:
     activePage==='students'?<StudentsPage/>:
     activePage==='teachers'?<TeachersPage/>:
-    activePage==='accounts'?<AccountsPage/>:
+    activePage==='accounts'?<AccountsPage csrf={csrf}/>:
     activePage==='assignments'?<AssignmentsPage/>:
     <><p className="form-eyebrow">BERANDA</p>
       <h1>Selamat datang, {profile.displayName}</h1>
