@@ -36,3 +36,7 @@ If you already have this QA clone, use `git fetch origin`, `git checkout feat/m0
 ## Next gates
 
 Even after local pass, PR #6 stays Draft until a separately approved, isolated **hosted** QA test or documented provider-parity decision, session replay/refresh tests, signup-off verification, reset reconciliation procedure and multi-role scope tests pass. Staff creation/reset remains disabled on Production.
+
+## Operator result — 16 October 2026
+
+Windows Docker QA: `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed`. The operator verified technical alias acceptance, initial sign-in, admin credential rotation, old credential rejection, new sign-in, synthetic identity deletion, and refusal to sign in after deletion. The isolated local stack reported stopping. **Local provider compatibility PASS. Hosted and multi-role E2E remain NOT RUN.** PR #6 stays Draft and Production provisioning is locked.
