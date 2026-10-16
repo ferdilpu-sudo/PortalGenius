@@ -38,12 +38,26 @@ begin
  where handle_hash=p_hash and revoked_at is null returning id into v_id;
  return v_id is not null;
 end $$;
+create function public.pg_qa_unbind_staff(p_user_id uuid)
+returns boolean language plpgsql security definer set search_path='' as $
+begin
+ if not exists(select 1 from private.login_identities l where l.auth_user_id=p_user_id
+  and l.username_normalized like 'qa_%')
+ then return false;end if;
+ delete from private.app_sessions where auth_user_id=p_user_id;
+ delete from public.account_roles where account_id=p_user_id;
+ delete from private.login_identities where auth_user_id=p_user_id;
+ delete from public.accounts where auth_user_id=p_user_id;
+ return true;
+end $;
 revoke all on function
+ public.pg_qa_unbind_staff(uuid),
  public.pg_qa_bind_staff(uuid,text,text,public.app_role),
  public.pg_qa_replace_tokens(text,text),
  public.pg_qa_hold_lease(text)
  from public,anon,authenticated;
 grant execute on function
+ public.pg_qa_unbind_staff(uuid),
  public.pg_qa_bind_staff(uuid,text,text,public.app_role),
  public.pg_qa_replace_tokens(text,text),
  public.pg_qa_hold_lease(text)
