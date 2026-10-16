@@ -8,7 +8,7 @@ const wanted={
   SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co',
   EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
   SESSION_KEY_VERSION:'1',
-  APP_ENV:'staging',
+  APP_ENV:'production',
   APP_ORIGIN:'https://portalgenius.pages.dev'
 };
 for(const [name,value] of Object.entries(wanted)) {
