@@ -51,3 +51,7 @@ Operator menjalankan pengujian Docker pada Windows dan melaporkan `LOCAL_AUTH_PR
 ## QA lanjutan Auth lokal — 16 Oktober 2026
 
 Operator mengonfirmasi `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed` dan local stack STOP. Mode signup-off dan concurrent provider refresh terhadap akun sintetis **PASS lokal**. Hosted signup OFF, replay cookie aplikasi dan refresh lease HTTP masih belum dibuktikan. PR #6 Draft, Production provisioning OFF.
+
+## M-002C2C — BFF session E2E lokal siap dieksekusi
+
+Branch PR #6 memiliki harness `-SessionE2E` dengan handler HTTP asli (bukan mocking), DB foundation sementara, dan dua akun guru sintetis; output HTTP/logout/parallel refresh/race dibatasi localhost. CI 54/54 PASS; **QA operator belum dijalankan**, sehingga issue #2 replay/refresh belum dapat ditutup. Production tetap OFF. [Kontrak](docs/qa/m002c2-session-e2e-gates.md).
