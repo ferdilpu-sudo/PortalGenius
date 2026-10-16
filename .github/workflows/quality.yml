@@ -46,7 +46,7 @@ jobs:
       - name: Parse Windows operator scripts without running Docker or secrets
         shell: pwsh
         run: |
-          foreach ($path in @("scripts/bootstrap-admin.ps1", "scripts/qa-local-auth.ps1")) {
+          foreach ($path in @("scripts/bootstrap-admin.ps1", "scripts/qa-local-auth.ps1", "scripts/ops/Backup-PortalGenius.ps1")) {
             $tokens = $null
             $parseErrors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors) | Out-Null
