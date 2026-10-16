@@ -101,3 +101,23 @@ Never post keys, session tokens, cookies, passwords, or real account details.
 - Neither an isolated Supabase QA project nor an isolated Pages deployment
   is yet available in the connected project inventory. **Hosted E1/E2 remain
   BLOCKED**, and Production account provisioning/reset remain disabled.
+
+## E3 incremental formatter and triage checkpoint — 16 October 2026
+
+- `prettier@3.6.2` is pinned directly in `package.json` and
+  `package-lock.json` with registry integrity; the blocking CI command
+  `npm run format:standard:check` runs the actual Prettier formatter check on
+  `package.json`, `package-lock.json` and `.prettierrc.json`.
+- Independent TypeScript-AST security lint and source whitespace checks still
+  cover implementation source. **Do not claim ESLint/Biome full lint policy
+  or repo-wide Prettier**: legacy compact TS/JS and documents must be migrated
+  in separately reviewed, nonfunctional batches.
+- `server/accounts/classifyResetReconciliation.ts` offers pure, read-only
+  classification of reset case evidence. No API uses it to reopen pending
+  operations, and all outcomes forbid password disclosure, automatic retry
+  and ledger mutation.
+- [Quality CI 38878649233](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38878649233)
+  **PASS:** `npm ci`, pinned Prettier check, AST lint, whitespace check,
+  77/77 unit tests, typecheck, build, audit 0 and Windows syntax.
+- Hosted E1 and E2 **NOT RUN**, reset recovery mutation **NOT IMPLEMENTED**,
+  PR #6 **Draft**, Production provisioning/reset **OFF**.
