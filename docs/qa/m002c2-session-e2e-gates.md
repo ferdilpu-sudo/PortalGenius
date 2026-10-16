@@ -57,3 +57,58 @@ fixture teardown, real session replay/refresh concurrency, non-admin hosted role
 boundary checks, production public signup setting verification, and operator
 reset-pending reconciliation procedure. Tracked by
 https://github.com/ferdilpu-sudo/PortalGenius/issues/2.
+
+## Implemented local BFF Session E2E harness (16 October 2026)
+
+**Status: CODE PREPARED / OPERATOR EXECUTION NOT RUN.** This is the first
+bounded slice of session E2E, not the full matrix above.
+
+Files: `scripts/qa-local-auth.ps1 -SessionE2E`,
+`scripts/qa/localSessionE2E.mjs`,
+`scripts/qa/localSessionFixtures.sql`. This mode starts a brand-new
+Supabase Docker project with **only** the M-001 identity/session foundation
+migration and QA-only helper SQL copied into its random temporary directory.
+The helpers are NOT under `supabase/migrations` and must never be applied
+to a hosted project. The standalone `9 checks` GoTrue provider tests run first.
+
+The BFF harness binds Node's HTTP server to `127.0.0.1:55325` and calls
+PortalGenius's actual Pages handler functions (not mocks). It uses a
+**strictly pinned localhost exception** in `verifyEnv` permitted only with
+`APP_ENV=local` and `EXPECTED_SUPABASE_PROJECT_REF=LOCAL_QA_ONLY`.
+Production and staging still require HTTPS and their own Supabase project ref.
+
+### Windows execution
+
+From the existing `PortalGenius-M002C2-QA` clone, with Docker Desktop running:
+
+```powershell
+cd "$HOME\Documents\GitHub\PortalGenius-M002C2-QA"
+git pull --ff-only origin feat/m002c2-account-provisioning-gates
+powershell -NoProfile -File .\scripts\qa-local-auth.ps1 -SessionE2E
+```
+
+The new suite must demonstrate:
+
+- **HTTP login/session** for a synthetic teacher, and teacher A/B isolation.
+- Cross-Origin logout attempt refused (403) without revoking legitimate cookie.
+- Valid logout followed by replay of the old cookie denied (401), other actor unaffected.
+- Two parallel HTTP session GETs with near-expired encrypted tokens:
+  same synthetic actor and precisely one database version transition.
+- Held refresh lease returns a bounded busy response; logout still revokes;
+  old cookie replay returns 401.
+- Teardown removes synthetic account bindings and Auth identities, then
+  CLI stops/clears only the isolated stack.
+
+Expected marker **only after operator execution**:
+`LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed`
+and `LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed`.
+
+Never send passwords, API keys, cookies, encrypted tokens or full environment
+output. Return only the PASS/BLOCKED lines. If the local stack reports failure,
+keep the PR Draft, do not turn on provisioning/reset in Production, and correct
+the precise fixture/handler issue first.
+
+**Still unverified after local pass:** hosted Supabase signup OFF, real
+Cloudflare Pages vs local Node handler parity, teacher/counselor/student
+assignment HTTP isolation, reset pending reconciliation, browser Secure cookie
+semantics, and the remainder of issue #2.
