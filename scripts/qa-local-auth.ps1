@@ -1,6 +1,7 @@
 # M-002C2 local-only Supabase Auth provider compatibility QA.
 # Never uses supabase link, db push/reset, hosted credentials, or production data.
-param([switch]$SessionE2E)
+param([switch]$SessionE2E, [switch]$RoleE2E)
+if ($RoleE2E) { $SessionE2E = $true }
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -152,7 +153,24 @@ try {
             $migrationDir = Join-Path $workspace 'supabase\migrations'
             New-Item -ItemType Directory -Path $migrationDir -Force | Out-Null
             Copy-Item -LiteralPath (Join-Path $repositoryRoot 'supabase\migrations\20261015052905_portalgenius_m001_identity_session_foundation.sql') -Destination (Join-Path $migrationDir '20261016090000_local_session_foundation.sql')
-            Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts\qa\localSessionFixtures.sql') -Destination (Join-Path $migrationDir '20261016090001_local_session_fixtures.sql')
+            if ($RoleE2E) {
+                # Apply the real production projection schema, not a simplified
+                # mock. All files are copied ONLY into the disposable local QA.
+                $migrations = @(
+                    @('20261015183000_m002_academic_catalog_foundation.sql','20261016090001_local_academic.sql'),
+                    @('20261015125808_m002c_identity_relations.sql','20261016090002_local_identity_relations.sql'),
+                    @('20261015125814_m002c_scoped_student_projection.sql','20261016090003_local_student_projection.sql'),
+                    @('20261015125821_m002c_admin_read_projections.sql','20261016090004_local_admin_projections.sql')
+                )
+                foreach ($pair in $migrations) {
+                    Copy-Item -LiteralPath (Join-Path $repositoryRoot "supabase\migrations\$($pair[0])") -Destination (Join-Path $migrationDir $pair[1])
+                }
+            }
+            Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts\qa\localSessionFixtures.sql') -Destination (Join-Path $migrationDir '20261016090005_local_session_fixtures.sql')
+            if ($RoleE2E) {
+                Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts\qa\localRoleScopeFixtures.sql') -Destination (Join-Path $migrationDir '20261016090006_local_role_fixtures.sql')
+                Write-Host 'LOCAL_ROLE_QA_SCHEMA_READY: production projections plus local-only synthetic helpers'
+            }
             Write-Host 'LOCAL_BFF_QA_SCHEMA_READY: isolated migrations only'
         }
 
@@ -182,6 +200,11 @@ try {
             Write-Host 'LOCAL_BFF_QA_START: real HTTP handlers, synthetic Auth and DB only'
             & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localSessionE2E.mjs')
             if ($LASTEXITCODE -ne 0) { throw 'LOCAL_BFF_QA_BLOCKED: see the local-only error label above' }
+        }
+        if ($RoleE2E) {
+            Write-Host 'LOCAL_ROLE_QA_START: staff scope matrix on localhost only'
+            & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localRoleE2E.mjs')
+            if ($LASTEXITCODE -ne 0) { throw 'LOCAL_ROLE_QA_BLOCKED: see the local-only error label above' }
         }
     } finally {
         foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
