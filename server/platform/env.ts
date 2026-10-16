@@ -1,3 +1,4 @@
+import {PRODUCTION_PAGES_ORIGIN,PRODUCTION_SUPABASE_REF} from './hostedQaBoundary.ts';
 export type Env={
   SUPABASE_URL?:string;SUPABASE_PUBLISHABLE_KEY?:string;SUPABASE_SECRET_KEY?:string;
   SESSION_ENCRYPTION_KEY?:string;SESSION_KEY_VERSION?:string;
@@ -25,6 +26,15 @@ export function verifyEnv(env:Env):VerifiedEnv {
   const appUrl=new URL(cfg.APP_ORIGIN);
   if(appUrl.origin!==cfg.APP_ORIGIN)throw new Error('CONFIG_APP_ORIGIN_INVALID');
   if(cfg.APP_ENV!=='local'&&appUrl.protocol!=='https:')throw new Error('CONFIG_REQUIRE_HTTPS');
+  // A Cloudflare Preview may inherit the Production project bindings.
+  // The canonical Production origin can never be labelled staging, and
+  // the production runtime may not silently point to an unrelated project.
+  if(cfg.APP_ORIGIN===PRODUCTION_PAGES_ORIGIN&&cfg.APP_ENV!=='production')
+    throw new Error('CONFIG_PRODUCTION_ENV_MISMATCH');
+  if(cfg.APP_ENV==='production'&&(
+   cfg.APP_ORIGIN!==PRODUCTION_PAGES_ORIGIN||
+   cfg.EXPECTED_SUPABASE_PROJECT_REF!==PRODUCTION_SUPABASE_REF
+  ))throw new Error('CONFIG_PRODUCTION_IDENTITY_MISMATCH');
   if(!['local','staging','production'].includes(cfg.APP_ENV))throw new Error('CONFIG_APP_ENV_INVALID');
   if(!/^[1-9][0-9]*$/.test(cfg.SESSION_KEY_VERSION))throw new Error('CONFIG_KEY_VERSION_INVALID');
   return cfg;
