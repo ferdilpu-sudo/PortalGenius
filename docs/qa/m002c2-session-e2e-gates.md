@@ -112,3 +112,7 @@ the precise fixture/handler issue first.
 Cloudflare Pages vs local Node handler parity, teacher/counselor/student
 assignment HTTP isolation, reset pending reconciliation, browser Secure cookie
 semantics, and the remainder of issue #2.
+
+## Local operator startup failure and remediation (16 October 2026)
+
+Operator ran `-SessionE2E` and observed `LOCAL_BFF_QA_SCHEMA_READY` followed by `LOCAL_QA_SUPABASE_COMMAND_FAILED: start (exit 1)` and local stack STOP. BFF HTTP tests **did not begin**; their outcome remains **NOT RUN**. Review of QA-only `scripts/qa/localSessionFixtures.sql` found an invalid bare `$` PostgreSQL function body delimiter in `pg_qa_unbind_staff`; corrected to matching `$qa$` tags. Added `tests/unit/localSessionFixtures.test.mjs` to detect malformed/unbalanced function bodies in future CI. Hardened the local CLI harness to classify start failures without printing unfiltered output or credentials. [Quality CI 56/56 PASS, Windows parser and build PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38854909769). **Fix awaits operator Docker re-test**. The earlier standalone local Auth 9/9 PASS is unchanged. Neither PR merge nor Production provisioning is authorized by these results.
