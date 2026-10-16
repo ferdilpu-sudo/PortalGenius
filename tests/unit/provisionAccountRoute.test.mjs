@@ -2,14 +2,47 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {onRequestPost} from '../../functions/api/v1/accounts/create.ts';
 import {isProvisioningEnabled,isStaffPasswordResetEnabled} from '../../server/accounts/provisioningGate.ts';
-test('account provisioning flag is OFF without explicit staging opt-in',()=>{
- assert.equal(isProvisioningEnabled({APP_ENV:'staging'}),false);
- assert.equal(isProvisioningEnabled({APP_ENV:'production',ACCOUNT_PROVISIONING_ENABLED:'enabled'}),false);
- assert.equal(isProvisioningEnabled({APP_ENV:'staging',ACCOUNT_PROVISIONING_ENABLED:'enabled'}),false);
- assert.equal(isProvisioningEnabled({APP_ENV:'staging',ACCOUNT_PROVISIONING_ENABLED:'enabled',
-  APP_ORIGIN:'https://portalgenius.pages.dev'}),false);
- assert.equal(isProvisioningEnabled({APP_ENV:'staging',ACCOUNT_PROVISIONING_ENABLED:'enabled',
-  APP_ORIGIN:'https://test-m002c2.portalgenius.pages.dev'}),true);
+test('Preview never gains access to the production database through a staging flag',()=>{
+ const preview={APP_ENV:'staging',APP_ORIGIN:'https://test-m002c2.portalgenius.pages.dev',
+  EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+  SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co'};
+ for(const flags of [
+  {},{ACCOUNT_PROVISIONING_ENABLED:'enabled'},
+  {ACCOUNT_PROVISIONING_ENABLED:'enabled',ACCOUNT_PROVISIONING_RELEASE:'reviewed-v1'}
+ ]){
+  assert.equal(isProvisioningEnabled({...preview,...flags}),false);
+  assert.equal(isStaffPasswordResetEnabled({...preview,...flags}),false);
+ }
+ assert.equal(isProvisioningEnabled({...preview,APP_ENV:'production',
+  ACCOUNT_PROVISIONING_ENABLED:'enabled',ACCOUNT_PROVISIONING_RELEASE:'reviewed-v1'}),false);
+});
+test('unrelated staging refs and lookalike Production domains stay locked',()=>{
+ const flags={ACCOUNT_PROVISIONING_ENABLED:'enabled',ACCOUNT_PROVISIONING_RELEASE:'reviewed-v1'};
+ for(const env of [
+  {APP_ENV:'staging',APP_ORIGIN:'https://isolated-qa.pages.dev',
+   EXPECTED_SUPABASE_PROJECT_REF:'abcdefghijklmnopqrst',
+   SUPABASE_URL:'https://abcdefghijklmnopqrst.supabase.co'},
+  {APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev.evil.test',
+   EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+   SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co'},
+  {APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
+   EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+   SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co.evil.test'}
+ ]){
+  assert.equal(isProvisioningEnabled({...env,...flags}),false);
+  assert.equal(isStaffPasswordResetEnabled({...env,...flags}),false);
+ }
+});
+test('all password reset release flags remain hard-locked until recovery exists',()=>{
+ const correct={APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
+  EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+  SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co',
+  ACCOUNT_PROVISIONING_ENABLED:'enabled',ACCOUNT_PROVISIONING_RELEASE:'reviewed-v1'};
+ assert.equal(isProvisioningEnabled(correct),true);
+ for(const env of [correct,{...correct,APP_ENV:'staging'},{
+  ...correct,APP_ORIGIN:'https://preview.portalgenius.pages.dev'}]){
+  assert.equal(isStaffPasswordResetEnabled(env),false);
+ }
 });
 test('production creation requires explicit dual opt-in and exact project identity',()=>{
  const production={APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
