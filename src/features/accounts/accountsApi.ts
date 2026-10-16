@@ -11,8 +11,13 @@ export class AccountRequestError extends Error{
  }
 }
 async function readBody<T>(response:Response):Promise<Envelope<T>>{
- try{return await response.json() as Envelope<T>;}
- catch{throw new AccountRequestError('UNKNOWN_RESPONSE','Respons server tidak dapat dipastikan. Periksa daftar akun sebelum mencoba lagi.');}
+ try{
+  const payload:unknown=await response.json();
+  if(payload&&typeof payload==='object'&&!Array.isArray(payload))
+   return payload as Envelope<T>;
+ }catch{/* malformed response is an uncertain write outcome */}
+ throw new AccountRequestError('UNKNOWN_RESPONSE',
+  'Respons server tidak dapat dipastikan. Periksa daftar akun sebelum mencoba lagi.');
 }
 export async function loadStaffCapabilities():Promise<StaffCapability>{
  const response=await fetch('/api/v1/accounts/capabilities',{
@@ -40,7 +45,8 @@ export async function createStaffAccount(input:ProvisionRequest,csrf:string,key:
   throw new AccountRequestError(body.error?.code??'UNKNOWN_RESPONSE',
    body.error?.message??'Hasil pembuatan akun tidak dapat dipastikan.');
  const validated=validateStaffCreationResponse(body.data,input);
- if(!validated)throw new AccountRequestError('UNKNOWN_RESPONSE',
-  'Hasil pembuatan akun tidak cocok dengan permintaan. Periksa akun sebelum mencoba lagi.');
+ if(!validated||response.status!==(validated.alreadyCompleted?200:201))
+  throw new AccountRequestError('UNKNOWN_RESPONSE',
+   'Hasil pembuatan akun tidak cocok dengan permintaan. Periksa akun sebelum mencoba lagi.');
  return validated;
 }
