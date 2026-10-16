@@ -71,3 +71,20 @@ Operator menjalankan `-RoleE2E`: Auth provider 9/9 PASS, BFF session 5-gate PASS
 ## Role QA diagnostic 21000 — local-only SQL cleanup candidate (16 Oktober 2026)
 
 Hasil operator terakhir: `SCOPES_CLEAR_STAGE_ASSIGNMENT_STUDENTS_SQLSTATE_21000` dan `ACCOUNT_CLEANUP_SKIPPED_SCOPE_DEPENDENCY`. Semua pemeriksaan keamanan lokal lainnya PASS, tetapi penghapusan fixture **BLOCKED**. PR #6 mengubah hanya fungsi cleanup QA lokal untuk menghapus relasi akademik per kunci primer (anak ke induk), tetap atomik, memberi diagnostik per baris. CI 59/59 PASS; **pengujian ulang Docker belum dilakukan**. Production tetap OFF. [Rincian](docs/qa/m002c2-role-e2e-gates.md).
+
+## M-002C2D — Docker Role E2E local PASS (16 Oktober 2026; hasil operator)
+
+Pengujian ulang operator pada Windows Docker setelah perbaikan local-only cleanup berhasil. Penanda terminal yang dilaporkan:
+
+```text
+LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed
+LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed
+LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed
+LOCAL_ROLE_QA_CLEANUP_PASS: synthetic students, staff and roles removed
+LOCAL_ROLE_E2E_QA_PASS: 7 gates; localhost only; no hosted project accessed
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+Tujuh gate role isolation dan cleanup fixture sintetis kini **PASS pada Docker lokal**, sehingga blocker local M-002C2D ditutup. Bukti ini berasal dari log eksekusi operator, bukan pengujian hosted. CI commit PR #6: [Quality SUCCESS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38867033509) (operator melaporkan 59/59 unit tests, build PASS, audit npm 0; workflow Windows syntax PASS). Tidak ada akses hosted/Production dari QA lokal.
+
+**Belum release-ready:** hosted Cloudflare Pages + Supabase QA terisolasi (signup-off, alias teknis, cookie/replay/parallel refresh, negative HTTP multi-role, cleanup), prosedur recovery reset pending/unknown, dan lint/format formal. **PR #6 tetap Draft, fitur create/reset tetap OFF di Production; jangan merge berdasarkan PASS lokal saja.**
