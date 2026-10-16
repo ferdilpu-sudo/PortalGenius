@@ -67,3 +67,7 @@ PR #6 menyediakan opsi `-RoleE2E` pada harness Docker yang membuat admin, guru A
 ## M-002C2D — Role QA runtime: akses PASS, cleanup BLOCKED (16 Oktober 2026)
 
 Operator menjalankan `-RoleE2E`: Auth provider 9/9 PASS, BFF session 5-gate PASS, tujuh pemeriksaan hak akses lintas peran PASS. Namun `LOCAL_ROLE_QA_CLEANUP_FAILED` muncul saat menghapus fixture, sehingga **tidak ada final Role E2E PASS**. Stack Docker sementara melaporkan STOP. Perubahan Draft PR #6 menambahkan diagnostik teredaksi per tahap cleanup dan tes regresi. Pengujian ulang operator diperlukan; jangan gabungkan PR atau aktifkan Production. [Bukti dan langkah](docs/qa/m002c2-role-e2e-gates.md).
+
+## Role QA diagnostic 21000 — local-only SQL cleanup candidate (16 Oktober 2026)
+
+Hasil operator terakhir: `SCOPES_CLEAR_STAGE_ASSIGNMENT_STUDENTS_SQLSTATE_21000` dan `ACCOUNT_CLEANUP_SKIPPED_SCOPE_DEPENDENCY`. Semua pemeriksaan keamanan lokal lainnya PASS, tetapi penghapusan fixture **BLOCKED**. PR #6 mengubah hanya fungsi cleanup QA lokal untuk menghapus relasi akademik per kunci primer (anak ke induk), tetap atomik, memberi diagnostik per baris. CI 59/59 PASS; **pengujian ulang Docker belum dilakukan**. Production tetap OFF. [Rincian](docs/qa/m002c2-role-e2e-gates.md).

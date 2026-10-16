@@ -129,3 +129,14 @@ LOCAL_AUTH_QA_STOP: stopping only our isolated project
 **Accepted:** locally hosted PortalGenius handler HTTP session replay after revoke, per-user isolation for two synthetic teachers, malicious Origin rejection, parallel refresh version/lease guard, bounded lease busy and logout replay; synthetic staff cleanup. The script's `5 gates` aggregate label covers six individual BFF PASS lines. Auth provider 9-check suite also passed locally.
 
 **Still open:** real deployed Cloudflare Pages (hosted) parity; the hosted Supabase signup-off setting; HTTP student/assignment scoping across teacher A/B, counselor A/B and principal; admin reset-pending manual reconciliation; authentic browser-cookie behavior; lint/format gates. Local PASS is not proof of those. Keep PR #6 Draft and Production provisioning/password reset OFF.
+
+## M-002C2D — perbaikan percobaan untuk SQLSTATE 21000 (16 Oktober 2026)
+
+Log runtime menempatkan cardinality error `21000` pada perintah bulk DELETE
+`public.assignment_students` di QA Docker; setelah itu proses penghapusan
+akun sengaja dilewati karena dependensi belum bersih. Implementasi baru
+menghapus relasi sintetis per kunci utama dengan urutan anak-ke-induk dalam
+satu transaksi RPC, dan tetap BLOCKED jika suatu baris atau cleanup gagal.
+Ini hanya mengubah SQL di `scripts/qa/localRoleScopeFixtures.sql`, bukan
+`supabase/migrations`. [CI 59/59 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38866780711).
+**Operator belum mengulangi QA Docker; jangan klaim M-002C2D PASS.**

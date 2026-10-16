@@ -145,3 +145,32 @@ If the operator next sees
 report only that line, plus `LOCAL_ROLE_QA_CLEANUP_FAILED`. These labels do not
 close the gate; they identify the exact local fixture operation to repair.
 Production provisioning/reset stays OFF and PR #6 stays Draft.
+
+## Third operator cleanup diagnostic — 16 October 2026
+
+With per-stage SQL diagnostics, the operator confirmed:
+
+```text
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: SCOPES_CLEAR_STAGE_ASSIGNMENT_STUDENTS_SQLSTATE_21000
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACCOUNT_CLEANUP_SKIPPED_SCOPE_DEPENDENCY
+LOCAL_ROLE_QA_CLEANUP_FAILED
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+Auth provider 9/9, BFF sessions 5-gate and all seven role scope assertions
+remain PASS, but role cleanup did not complete, so **M-002C2D remains BLOCKED**.
+The error was localized to the first bulk `DELETE` on
+`public.assignment_students`. SQLSTATE `21000` alone does not prove
+whether the error originated in an expression/trigger or another nested
+operation; the earlier FK errors were follow-on failures from uncleaned
+relations, not independent role authorization failures.
+
+Next attempt changes ONLY the local-only QA cleanup RPC to delete fixture
+records one at a time using their complete primary keys, ordered child-first,
+with strict row-existence checks, atomic rollback and sanitized per-row SQLSTATE
+diagnostics. This is a candidate remediation, **not yet proven by Docker**.
+The test harness remains opt-in local `-RoleE2E` only. No production
+migrations, hosted Auth users or live student records were modified.
+
+[CI for the new cleanup approach: 59/59 unit tests, Windows parser, build and
+audit PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38866780711).
