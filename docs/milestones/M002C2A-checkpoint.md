@@ -100,3 +100,7 @@ Production provisioning dan reset tetap dikunci; PR #6 Draft.
 ## Operator verification — 16 Oktober 2026
 
 `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed` dan `LOCAL_AUTH_QA_STOP: stopping only our isolated project` dilaporkan dari Windows PowerShell. Log memuat keberhasilan pembuatan identitas sintetis dengan alias teknis, sign-in, admin credential update, penolakan credential lama, sign-in credential baru, penghapusan identitas sintetis dan penolakan login setelah penghapusan. **QA lokal PASS; hosted Auth parity belum diuji.** PR #6 tetap Draft, provisioning dan reset pada Production tetap terkunci.
+
+## Operator checkpoint — 16 October 2026, extended local Auth QA
+
+`LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed` and `LOCAL_AUTH_QA_STOP: stopping only our isolated project` were reported from Windows Docker. Local Auth public signup denial and simultaneous refresh on independent clients are PASS. This **does not close** GitHub issue #2's revoked cookie replay, real application BFF lease concurrency or hosted signup setting. No real staff accounts or student records were created. PR #6 remains Draft and Production provisioning/reset stays locked.

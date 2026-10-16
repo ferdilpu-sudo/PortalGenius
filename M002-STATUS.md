@@ -47,3 +47,7 @@ Docker Desktop sudah tersedia di komputer operator. PR #6 menambahkan `scripts/q
 ## Bukti tambahan QA Auth — 16 Oktober 2026
 
 Operator menjalankan pengujian Docker pada Windows dan melaporkan `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed`. Alamat teknis `.invalid`, login, reset lokal, penolakan password lama, akun sintetis dihapus, dan login sesudah penghapusan ditolak. Stack lokal melaporkan STOP. **PASS lokal tidak berarti PASS hosted.** PR #6 Draft; Production OFF. [Checkpoint](docs/milestones/M002C2A-checkpoint.md).
+
+## QA lanjutan Auth lokal — 16 Oktober 2026
+
+Operator mengonfirmasi `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed` dan local stack STOP. Mode signup-off dan concurrent provider refresh terhadap akun sintetis **PASS lokal**. Hosted signup OFF, replay cookie aplikasi dan refresh lease HTTP masih belum dibuktikan. PR #6 Draft, Production provisioning OFF.

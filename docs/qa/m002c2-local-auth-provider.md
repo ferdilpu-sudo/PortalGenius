@@ -46,3 +46,7 @@ Windows Docker QA: `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project acc
 The next local execution additionally checks that anonymous registration is rejected by the GoTrue HTTP endpoint when `[auth] enable_signup = false` is set **only in the temporary QA project**. It also runs simultaneous refresh requests using the same existing synthetic token from independent clients, ensuring at least one refresh succeeds and every successful result maps to the same Auth user. The results of these additional checks are **NOT YET RUN**; the earlier `6 checks` operator PASS remains valid.
 
 These tests do **not** prove hosted signup is disabled, nor do they prove PortalGenius application cookie replay or SQL refresh lease behavior through HTTP. Those continue to be separate release gates. The expected label for the extended harness is `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed`.
+
+## Operator verification — 16 October 2026
+
+The operator ran the extended Docker probe and reported `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed` followed by `LOCAL_AUTH_QA_STOP: stopping only our isolated project`. Both new local checks (anonymous signup disabled and concurrent provider refresh identity consistency) therefore PASS, in addition to the earlier seven individual assertions. The output is operator-reported rather than a recorded Actions artifact. **Hosted signup policy, Cloudflare BFF session replay, and actual concurrent SQL lease over HTTP remain NOT RUN.**
