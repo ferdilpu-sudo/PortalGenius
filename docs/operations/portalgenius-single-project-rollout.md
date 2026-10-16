@@ -76,3 +76,44 @@ plan. Do not use this application as a production testing sandbox.
 Implement staff records, enrollment, and teaching assignments as
 independent, reviewed migrations and admin workflows. Existing database
 rows must remain intact.
+
+## Read-only Production preflight — optional operator command
+
+A separate script was added to make the **same production project** safe
+to inspect without provisioning a QA Supabase project.
+
+From a checkout of Draft PR #6 (with Node 22 and the committed
+`wrangler.toml`), run:
+
+```powershell
+npm run qa:production:readonly
+```
+
+The script performs exactly two HTTP **GET** requests:
+
+1. `https://portalgenius.pages.dev/api/v1/health`, confirming the expected
+   PortalGenius API health payload.
+2. `https://vpglikrkvsnoyjvluigs.supabase.co/auth/v1/settings`, using
+   **only the publishable key** already present in tracked `wrangler.toml`.
+   It requires `disable_signup: true` from live Supabase Auth.
+
+Any mismatch, missing setting, redirect, unexpected payload or network
+error fails closed. No credentials are printed and the script never
+makes POST/PUT/PATCH/DELETE requests. Only record the PASS/BLOCKED label,
+not raw network responses.
+
+**Limits of evidence:** source `wrangler.toml` is not definitive proof
+of deployed Cloudflare secret/variable settings, the API health handler
+does not prove the live Supabase binding, and the public Auth settings
+do not prove backup/restore capability. Dashboard verification of
+production variables, signup controls, Auth provider email-alias
+compatibility, backups and first-real-account onboarding is still
+required separately. Do not infer permission to enable provisioning
+from a passing GET-only script.
+
+The CI test `tests/unit/productionReadOnlyPreflight.test.mjs`
+uses a fake fetch implementation, including negative tests for wrong
+project/host, signup enabled and redirects; **CI never invokes the live
+GET requests**. The existing separate hosted QA runner remains retained
+as non-release legacy material and should not be used to claim
+an isolated environment exists.
