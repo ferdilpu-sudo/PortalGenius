@@ -25,10 +25,33 @@ function Invoke-LocalCli([string[]]$arguments, [switch]$CaptureOutput) {
     $ErrorActionPreference = 'Continue'
     if ($CaptureOutput) {
         $lines = @(& npx.cmd --yes "supabase@$cliVersion" @arguments 2>$null)
+    } elseif ($arguments[0] -eq 'start') {
+        # Only the disposable local Docker workspace is used for diagnostics.
+        # Never print unfiltered stdout: a successful CLI may output local keys.
+        $startLog = Join-Path $workspace 'qa-start-output.tmp'
+        try {
+            & npx.cmd --yes "supabase@$cliVersion" @arguments *> $startLog
+            $cliExitCode = $LASTEXITCODE
+            if ($cliExitCode -ne 0) {
+                $output = [IO.File]::ReadAllText($startLog)
+                $reason = if ($output -match '(?i)syntax error at or near|unterminated dollar-quoted') {
+                    'LOCAL_QA_START_DIAGNOSTIC: SQL_SYNTAX_ERROR'
+                } elseif ($output -match '(?i)migration|failed to apply') {
+                    'LOCAL_QA_START_DIAGNOSTIC: LOCAL_MIGRATION_FAILED'
+                } elseif ($output -match '(?i)docker|container|image') {
+                    'LOCAL_QA_START_DIAGNOSTIC: DOCKER_START_FAILURE'
+                } else {
+                    'LOCAL_QA_START_DIAGNOSTIC: UNCLASSIFIED_START_FAILURE'
+                }
+                Write-Warning $reason
+            }
+        } finally {
+            Remove-Item -LiteralPath $startLog -Force -ErrorAction SilentlyContinue
+        }
     } else {
         & npx.cmd --yes "supabase@$cliVersion" @arguments 1>$null 2>$null
     }
-    $cliExitCode = $LASTEXITCODE
+    if ($arguments[0] -ne 'start') { $cliExitCode = $LASTEXITCODE }
     if ($cliExitCode -ne 0) {
         throw "LOCAL_QA_SUPABASE_COMMAND_FAILED: $($arguments[0]) (exit $cliExitCode)"
     }
