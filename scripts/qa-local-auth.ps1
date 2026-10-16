@@ -1,5 +1,6 @@
 # M-002C2 local-only Supabase Auth provider compatibility QA.
 # Never uses supabase link, db push/reset, hosted credentials, or production data.
+param([switch]$SessionE2E)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -74,7 +75,7 @@ try {
         ForEach-Object { Remove-Item "Env:$_" -ErrorAction SilentlyContinue }
 
     # Another local project may already use the reserved QA ports. Do not stop it.
-    foreach ($port in @(55320,55321,55322,55323,55324,55327)) {
+    foreach ($port in @(55320,55321,55322,55323,55324,55325,55327)) {
         $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, $port)
         try {
             $listener.Start()
@@ -122,6 +123,15 @@ try {
             $config.Substring($authMatch.Index + $authMatch.Length)
         [IO.File]::WriteAllText($configPath, $config, [Text.UTF8Encoding]::new($false))
         Write-Host 'LOCAL_QA_AUTH_SIGNUP_DISABLED: isolated Docker project only'
+        if ($SessionE2E) {
+            # Copy ONLY session foundation and synthetic-only helper SQL to the
+            # newly created CLI project. Never run migrations against hosted DB.
+            $migrationDir = Join-Path $workspace 'supabase\migrations'
+            New-Item -ItemType Directory -Path $migrationDir -Force | Out-Null
+            Copy-Item -LiteralPath (Join-Path $repositoryRoot 'supabase\migrations\20261015052905_portalgenius_m001_identity_session_foundation.sql') -Destination (Join-Path $migrationDir '20261016090000_local_session_foundation.sql')
+            Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts\qa\localSessionFixtures.sql') -Destination (Join-Path $migrationDir '20261016090001_local_session_fixtures.sql')
+            Write-Host 'LOCAL_BFF_QA_SCHEMA_READY: isolated migrations only'
+        }
 
         $initialized = $true # Also clean up containers after partially failed startup.
         Invoke-LocalCli @('start','--exclude',
@@ -145,6 +155,11 @@ try {
         Write-Host 'LOCAL_AUTH_QA_PROVIDER_READY: localhost only'
         & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localAuthProbe.mjs')
         if ($LASTEXITCODE -ne 0) { throw 'LOCAL_AUTH_QA_BLOCKED: see the PASS/BLOCKED checks above' }
+        if ($SessionE2E) {
+            Write-Host 'LOCAL_BFF_QA_START: real HTTP handlers, synthetic Auth and DB only'
+            & node --experimental-strip-types (Join-Path $repositoryRoot 'scripts\qa\localSessionE2E.mjs')
+            if ($LASTEXITCODE -ne 0) { throw 'LOCAL_BFF_QA_BLOCKED: see the local-only error label above' }
+        }
     } finally {
         foreach ($name in @('PG_QA_LOCAL_URL','PG_QA_LOCAL_ANON_KEY','PG_QA_LOCAL_SERVICE_KEY')) {
             Remove-Item "Env:$name" -ErrorAction SilentlyContinue
