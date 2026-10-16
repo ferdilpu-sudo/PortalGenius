@@ -124,3 +124,38 @@ terisolasi, sementara PR #6 tetap Draft dan fitur Production create/reset OFF.
 Operator menyetujui biaya **US$0/bulan** untuk proyek Supabase `portalgenius-qa`, organisasi terhubung, region `ap-northeast-1`. Pemeriksaan biaya Supabase `get_cost` mengembalikan monthly amount `0`, lalu `confirm_cost` sukses. Namun, panggilan `create_project` ditolak oleh Supabase karena pemilik organisasi telah mencapai batas **2 active free projects**. Pemeriksaan ulang `list_projects` menampilkan hanya dua proyek semula: `Portal Genius` dan `layarbelajar-staging`, keduanya aktif; **tidak ada proyek QA baru dibuat**.
 
 **Keputusan keamanan:** jangan menjeda/menghapus salah satu proyek yang ada, tidak meng-upgrade organisasi dan tidak menggunakan proyek Production ataupun LayarBelajar sebagai Hosted QA. E1 Hosted preflight dan E2 synthetic hosted E2E tetap **BLOCKED** sampai kapasitas QA independen tersedia dengan persetujuan operator. PR #6 tetap Draft dan akun create/reset Production OFF. CLI/Docker QA lokal sebelumnya tetap menjadi bukti terpisah, bukan Hosted PASS.
+
+## M-002C2F — Single-project PortalGenius Production (16 Oktober 2026, keputusan operator)
+
+Operator memutuskan **tidak menggunakan proyek Supabase QA hosted terpisah**.
+Implementasi berlanjut pada proyek Supabase **Portal Genius** yang sudah ada
+(`vpglikrkvsnoyjvluigs`), tanpa memindahkan, menghapus atau menjeda proyek
+`layarbelajar-staging`. Percobaan membuat `portalgenius-qa` telah gagal
+karena batas dua proyek gratis; tidak ada proyek QA yang tersisa.
+
+Pemeriksaan Supabase remote **read-only** mengonfirmasi proyek
+`ACTIVE_HEALTHY`, migrasi M-001 sampai M-002C2 tercatat applied, dan
+inventaris dasar **1 akun administrator, 0 staf, 0 siswa, 0 operasi reset**.
+Tidak ada akun, data akademik, Auth credential ataupun SQL production
+yang dimutasi dalam checkpoint ini. Security Advisor masih melaporkan
+RLS-without-policy (deny-by-default yang perlu direview) dan leaked
+password protection disabled (risiko yang telah dicatat).
+
+Branch PR #6 sekarang mengoreksi `wrangler.toml` menjadi
+`APP_ENV=production` untuk `https://portalgenius.pages.dev`,
+menambahkan halaman admin pembuatan staf username-only, endpoint capability
+read-only khusus admin, pemisahan feature gate create vs reset, dan tes
+negatif tambahan. Fitur penciptaan akun Production **default OFF**;
+memerlukan dua opt-in runtime yang tidak ditulis di repo:
+`ACCOUNT_PROVISIONING_ENABLED=enabled` dan
+`ACCOUNT_PROVISIONING_RELEASE=reviewed-v1` beserta exact origin/proyek.
+**Jangan mengaktifkannya sebelum code review, backup/recovery, dan keputusan
+rilis operator yang terpisah.** Password reset Production tetap OFF secara
+eksplisit meski create nantinya diaktifkan; pending reset recovery belum siap.
+
+Tidak ada klaim PASS hosted QA, sebab operator memilih untuk tidak
+menjalankan gate itu. CI unit/build dan local Docker E2E adalah bukti
+tersendiri; test otomatis destruktif tidak boleh dijalankan pada database
+Production. PR #6 tetap **Draft** dan perubahan UI masih di branch, belum
+berada di aplikasi live. Prosedur:
+[Single-project rollout](docs/operations/portalgenius-single-project-rollout.md).
