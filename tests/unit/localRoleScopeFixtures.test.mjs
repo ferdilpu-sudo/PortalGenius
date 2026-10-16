@@ -20,7 +20,7 @@ test('role E2E uses all six synthetic roles and guarded student scope assertions
   'qa_counselor_a','qa_counselor_b','qa_principal',
   'LOCAL_ROLE_QA_CLEANUP_PASS','LOCAL_ROLE_E2E_QA_PASS',
   'SCOPE_MISMATCH_','PRINCIPAL_STUDENTS_NOT_DENIED',
-  'ANON_DIRECT_STUDENTS_ALLOWED','ACTOR_SPOOF'
+  'ANON_DIRECT_TABLE_ALLOWED','AUTHENTICATED_DIRECT_TABLE_ALLOWED','ACTOR_SPOOF'
  ])assert.ok(runner.includes(identifier),identifier);
  const cleanup=runner.indexOf('LOCAL_ROLE_QA_CLEANUP_PASS');
  const result=runner.indexOf('LOCAL_ROLE_E2E_QA_PASS');
