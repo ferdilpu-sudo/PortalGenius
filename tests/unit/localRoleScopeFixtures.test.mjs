@@ -38,5 +38,5 @@ test('role QA copies real projection migrations only in opt-in disposable Docker
  ])assert.ok(windows.includes(file),file);
  assert.match(windows,/LOCAL_ROLE_QA_START/);
  assert.match(windows,/supabase\\migrations/);
- assert.doesNotMatch(windows,/supabase link/);
+ assert.doesNotMatch(windows,/Invoke-LocalCli\s+@\('link'/);
 });
