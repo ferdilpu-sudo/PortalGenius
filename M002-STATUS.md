@@ -59,3 +59,7 @@ Branch PR #6 memiliki harness `-SessionE2E` dengan handler HTTP asli (bukan mock
 ## Operator gate PASS — local BFF Session E2E (16 October 2026)
 
 `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks`, `LOCAL_BFF_SESSION_QA_CLEANUP_PASS` dan `LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only` dilaporkan dari Windows Docker. Enam pemeriksaan individual BFF PASS: login/session HTTP, pemisahan guru A/B, Origin asing 403, replay cookie setelah logout HTTP 401, refresh paralel 1 perubahan versi, lease busy terbatas dan logout replay 401. **Gate BFF lokal PASS**, tetapi hosted/BFF Cloudflare, signup hosted, dan role data siswa lintas peran belum diuji. PR #6 Draft; Production OFF. [Bukti](docs/qa/m002c2-session-e2e-gates.md).
+
+## M-002C2D — Role HTTP QA lokal (siap diuji)
+
+PR #6 menyediakan opsi `-RoleE2E` pada harness Docker yang membuat admin, guru A/B, konselor A/B, kepala sekolah dan tujuh siswa sintetis. Endpoint HTTP siswa dan master diuji memakai proyeksi SQL M-002C1 asli, termasuk penugasan aktif/expired, arsip, spoof actor dan akses tabel langsung. **Belum dijalankan operator; jangan klaim PASS.** [Panduan](docs/qa/m002c2-role-e2e-gates.md). Production tetap OFF.
