@@ -100,3 +100,21 @@ Branch Draft PR #6 menambahkan guard `hostedQaIdentity`, endpoint `GET /api/v1/q
 Workflow GitHub Actions **manual-only** disiapkan pada branch PR #6 dengan `contents: read` dan environment `hosted-qa`. Sampai workflow ada di default branch, UI GitHub tidak dapat menjalankannya; jangan merge PR hanya untuk mengaktifkan tombol ini. Skrip preflight lokal read-only dapat digunakan setelah QA Pages + Supabase terpisah tersedia. [Petunjuk Hosted preflight](docs/qa/m002c2e-hosted-preflight-action.md).
 
 Quality CI [run 38870055207](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38870055207) **PASS**: 69/69 unit tests, pemeriksaan AST lint keamanan terpisah dari typecheck, source whitespace format checks, typecheck, build, Windows syntax dan npm audit 0. Ini **bukan pengganti** lint/formatter standar (ESLint/Biome/Prettier) dan tidak menutup gate quality sepenuhnya. QA hosted E1/E2 belum dijalankan; proyek Supabase QA terisolasi belum tersedia. PR #6 tetap Draft, account create/reset Production OFF.
+
+## M-002C2E — Quality + reset read-only classifier (16 Oktober 2026)
+
+Draft PR #6 sekarang mencakup modul `server/accounts/classifyResetReconciliation.ts`
+dengan keputusan **fail-closed** untuk reset password tidak pasti. Modul
+hanya mengklasifikasikan bukti peran, akun, audit, sesi, dan operasi; **tidak
+dapat mengungkap password, melakukan retry, atau mengubah ledger reset**.
+Mekanisme pemulihan reset yang melakukan mutasi tetap **BLOCKED** dan hanya
+boleh diuji di proyek QA terisolasi setelah persetujuan operator.
+
+Lint AST keamanan + whitespace format source tetap menjadi blocking CI.
+Sebagai format standar bertahap, `prettier@3.6.2` kini dipin dalam
+`package.json` dan `package-lock.json`, dengan Prettier check pada tiga
+file JSON konfigurasi. **Bukan** formatter repo-wide atau ESLint penuh.
+[Quality CI 38878649233](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38878649233)
+**PASS (77/77 tes, Prettier PASS, typecheck/build PASS, audit 0)**.
+Hosted E1/E2 tetap NOT RUN karena tidak ada Supabase QA + Cloudflare QA
+terisolasi, sementara PR #6 tetap Draft dan fitur Production create/reset OFF.
