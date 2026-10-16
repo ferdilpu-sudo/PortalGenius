@@ -1,1 +1,8 @@
 .account-detail{font-size:13px;margin:5px 0 0;color:var(--muted);line-height:1.5;}
+.account-management-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:20px;align-items:start;}
+.account-management-layout .welcome-panel{margin-top:20px;}
+.account-help{font-size:13px;line-height:1.6;color:var(--muted);}
+.account-temporary-password{display:block;overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;padding:14px;background:var(--background);border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:15px;}
+.account-create-panel .field{margin-bottom:16px;}
+.account-create-panel h3{font-size:16px;}
+@media(max-width:860px){.account-management-layout{grid-template-columns:minmax(0,1fr);}}
