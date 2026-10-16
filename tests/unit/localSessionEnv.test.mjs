@@ -27,3 +27,14 @@ test('production still requires project-specific HTTPS Supabase host',()=>{
  assert.equal(verifyEnv(prod).SUPABASE_URL,prod.SUPABASE_URL);
  assert.throws(()=>verifyEnv({...prod,SUPABASE_URL:'http://127.0.0.1:55321'}),/CONFIG_PROJECT_REF_MISMATCH/);
 });
+test('production and staging labels cannot be swapped around the live origin',()=>{
+ const prod={...local,APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
+  SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co',
+  EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs'};
+ assert.equal(verifyEnv(prod).APP_ENV,'production');
+ assert.throws(()=>verifyEnv({...prod,APP_ENV:'staging'}),/CONFIG_PRODUCTION_ENV_MISMATCH/);
+ assert.throws(()=>verifyEnv({...prod,APP_ORIGIN:'https://preview.portalgenius.pages.dev'}),/CONFIG_PRODUCTION_IDENTITY_MISMATCH/);
+ assert.throws(()=>verifyEnv({...prod,
+  SUPABASE_URL:'https://abcdefghijklmnopqrst.supabase.co',
+  EXPECTED_SUPABASE_PROJECT_REF:'abcdefghijklmnopqrst'}),/CONFIG_PRODUCTION_IDENTITY_MISMATCH/);
+});
