@@ -9,7 +9,7 @@ const env={
   SESSION_ENCRYPTION_KEY:'synthetic-key-not-used-without-cookie',
   SESSION_KEY_VERSION:'1',
   APP_ORIGIN:'https://portalgenius.pages.dev',
-  APP_ENV:'staging',
+  APP_ENV:'production',
   EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs'
 };
 test('academic year GET denies request with no session before DB access',async()=>{
