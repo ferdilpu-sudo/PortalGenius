@@ -107,4 +107,25 @@ Production provisioning dan reset tetap dikunci; PR #6 Draft.
 
 ## M-002C2C — Local BFF session HTTP harness (16 October 2026)
 
-New opt-in `-SessionE2E` mode added to `scripts/qa-local-auth.ps1`, which runs the already validated Auth provider suite first then prepares only M-001 session migrations plus local-only fixture SQL in its unique disposable Docker project. A Node HTTP server binds only to `127.0.0.1:55325` and calls the real Pages login/session/logout handlers. The runner tests revoked-cookie HTTP 401, cross-origin rejection, A/B identity separation, concurrent near-expired refresh/one version transition, bounded busy lease and logout replay. Synthetic users are unbound and removed before isolated Docker cleanup. CI Quality [54/54 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38853780015) validates code, not actual Docker endpoint behavior. **Operator's new local BFF test NOT RUN**, expected `LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed`. Full cloud browser/hosted parity and role/student assignment matrix still NOT RUN. PR remains Draft; Production feature gate OFF.
+New opt-in `-SessionE2E` mode added to `scripts/qa-local-auth.ps1`, which runs the already validated Auth provider suite first then prepares only M-001 session migrations plus local-only fixture SQL in its unique disposable Docker project. A Node HTTP server binds only to `127.0.0.1:55325` and calls the real Pages login/session/logout handlers. The runner tests revoked-cookie HTTP 401, cross-origin rejection, A/B identity separation, concurrent near-expired refresh/one version transition, bounded busy lease and logout replay. Synthetic users are unbound and removed before isolated Docker cleanup. CI Quality [54/54 PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38853780015) validates code, not actual Docker endpoint behavior. **Local BFF operator test PASSED on 16 October 2026**, expected `LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed`. Full cloud browser/hosted parity and role/student assignment matrix still NOT RUN. PR remains Draft; Production feature gate OFF.
+
+## Operator acceptance — LOCAL BFF SESSION E2E PASS (16 October 2026)
+
+After updating the QA branch, the operator ran `powershell -NoProfile -File .\scripts\qa-local-auth.ps1 -SessionE2E` on Windows Docker, reporting:
+
+```text
+LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed
+PASS BFF login and session on isolated local HTTP
+PASS BFF simultaneous requests keep teacher A/B identities separate
+PASS BFF hostile Origin refused without revoking session
+PASS BFF revoked cookie replay denied HTTP 401, teacher B unaffected
+PASS BFF concurrent near-expiry HTTP refresh commits one lease/version
+PASS BFF lease busy bounded and logout replay HTTP 401
+LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed
+LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+**Accepted:** locally hosted PortalGenius handler HTTP session replay after revoke, per-user isolation for two synthetic teachers, malicious Origin rejection, parallel refresh version/lease guard, bounded lease busy and logout replay; synthetic staff cleanup. The script's `5 gates` aggregate label covers six individual BFF PASS lines. Auth provider 9-check suite also passed locally.
+
+**Still open:** real deployed Cloudflare Pages (hosted) parity; the hosted Supabase signup-off setting; HTTP student/assignment scoping across teacher A/B, counselor A/B and principal; admin reset-pending manual reconciliation; authentic browser-cookie behavior; lint/format gates. Local PASS is not proof of those. Keep PR #6 Draft and Production provisioning/password reset OFF.

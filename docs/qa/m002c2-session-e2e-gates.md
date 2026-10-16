@@ -116,3 +116,24 @@ semantics, and the remainder of issue #2.
 ## Local operator startup failure and remediation (16 October 2026)
 
 Operator ran `-SessionE2E` and observed `LOCAL_BFF_QA_SCHEMA_READY` followed by `LOCAL_QA_SUPABASE_COMMAND_FAILED: start (exit 1)` and local stack STOP. BFF HTTP tests **did not begin**; their outcome remains **NOT RUN**. Review of QA-only `scripts/qa/localSessionFixtures.sql` found an invalid bare `$` PostgreSQL function body delimiter in `pg_qa_unbind_staff`; corrected to matching `$qa$` tags. Added `tests/unit/localSessionFixtures.test.mjs` to detect malformed/unbalanced function bodies in future CI. Hardened the local CLI harness to classify start failures without printing unfiltered output or credentials. [Quality CI 56/56 PASS, Windows parser and build PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38854909769). **Fix awaits operator Docker re-test**. The earlier standalone local Auth 9/9 PASS is unchanged. Neither PR merge nor Production provisioning is authorized by these results.
+
+## Operator acceptance — LOCAL BFF SESSION E2E PASS (16 October 2026)
+
+After updating the QA branch, the operator ran `powershell -NoProfile -File .\scripts\qa-local-auth.ps1 -SessionE2E` on Windows Docker, reporting:
+
+```text
+LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed
+PASS BFF login and session on isolated local HTTP
+PASS BFF simultaneous requests keep teacher A/B identities separate
+PASS BFF hostile Origin refused without revoking session
+PASS BFF revoked cookie replay denied HTTP 401, teacher B unaffected
+PASS BFF concurrent near-expiry HTTP refresh commits one lease/version
+PASS BFF lease busy bounded and logout replay HTTP 401
+LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed
+LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+**Accepted:** locally hosted PortalGenius handler HTTP session replay after revoke, per-user isolation for two synthetic teachers, malicious Origin rejection, parallel refresh version/lease guard, bounded lease busy and logout replay; synthetic staff cleanup. The script's `5 gates` aggregate label covers six individual BFF PASS lines. Auth provider 9-check suite also passed locally.
+
+**Still open:** real deployed Cloudflare Pages (hosted) parity; the hosted Supabase signup-off setting; HTTP student/assignment scoping across teacher A/B, counselor A/B and principal; admin reset-pending manual reconciliation; authentic browser-cookie behavior; lint/format gates. Local PASS is not proof of those. Keep PR #6 Draft and Production provisioning/password reset OFF.

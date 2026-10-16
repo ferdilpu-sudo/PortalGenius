@@ -54,7 +54,7 @@ M-002: semester/year -> master -> enrollment -> assignment -> akun dan reset -> 
 | Milestone | Status | Bukti |
 |---|---|---|
 | M-001 | **Closed — accepted exceptions** | CI 12/12 unit PASS, npm audit 0, typecheck/build PASS; tiga migrasi, hosted API 4/4, admin bootstrap/login/password/logout/relogin PASS; sesi revoked ditolak SQL. Lihat [M001 closeout](docs/milestones/M001-closeout.md). Deferred: [#2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2). |
-| M-002 | **In progress — M002C2** | M002A/B/C1 merged, MENU M002C1 PASS. [PR #6](https://github.com/ferdilpu-sudo/PortalGenius/pull/6) Draft: provisioning staf username-only dan reset admin. QA lokal Docker Supabase Auth **PASS 16 Okt 2026**; uji hosted, multi-role HTTP, cookie replay, dan public signup OFF **NOT RUN**. Production provisioning OFF. |
+| M-002 | **In progress — M002C2** | M002A/B/C1 merged, MENU M002C1 PASS. [PR #6](https://github.com/ferdilpu-sudo/PortalGenius/pull/6) Draft: provisioning staf username-only dan reset admin. QA lokal Docker Auth 9/9 **PASS** dan BFF session E2E 5-gate **PASS 16 Okt 2026** (replay cookie HTTP 401, refresh paralel dan cleanup). Uji **hosted**, role siswa/konselor/principal dan signup OFF hosted **NOT RUN**. Production provisioning OFF. |
 | M-003 | Not started | Menunggu master dan assignment |
 | M-004 | Not started | Menunggu model akademik |
 | M-005 | Not started | Menunggu penugasan konselor |

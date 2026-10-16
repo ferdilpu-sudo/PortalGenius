@@ -55,3 +55,7 @@ Operator mengonfirmasi `LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project
 ## M-002C2C — BFF session E2E lokal siap dieksekusi
 
 Branch PR #6 memiliki harness `-SessionE2E` dengan handler HTTP asli (bukan mocking), DB foundation sementara, dan dua akun guru sintetis; output HTTP/logout/parallel refresh/race dibatasi localhost. CI 54/54 PASS; **QA operator belum dijalankan**, sehingga issue #2 replay/refresh belum dapat ditutup. Production tetap OFF. [Kontrak](docs/qa/m002c2-session-e2e-gates.md).
+
+## Operator gate PASS — local BFF Session E2E (16 October 2026)
+
+`LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks`, `LOCAL_BFF_SESSION_QA_CLEANUP_PASS` dan `LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only` dilaporkan dari Windows Docker. Enam pemeriksaan individual BFF PASS: login/session HTTP, pemisahan guru A/B, Origin asing 403, replay cookie setelah logout HTTP 401, refresh paralel 1 perubahan versi, lease busy terbatas dan logout replay 401. **Gate BFF lokal PASS**, tetapi hosted/BFF Cloudflare, signup hosted, dan role data siswa lintas peran belum diuji. PR #6 Draft; Production OFF. [Bukti](docs/qa/m002c2-session-e2e-gates.md).
