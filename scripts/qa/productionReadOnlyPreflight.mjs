@@ -61,7 +61,7 @@ export async function runProductionReadOnlyPreflight(config,fetchImpl=fetch){
  return {apiReachable:true,publicSignupDisabled:true,scope:'READ_ONLY_PRODUCTION'};
 }
 
-if(process.argv[1]&&resolve(process.argv[1])===pathToFileURL(import.meta.url).pathname){
+if(process.argv[1]&&pathToFileURL(resolve(process.argv[1])).href===import.meta.url){
  // Do not print configuration, network payloads or the publishable key.
  try{
   const config=parseProductionBinding(readFileSync('wrangler.toml','utf8'));
