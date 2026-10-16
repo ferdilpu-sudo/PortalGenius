@@ -86,3 +86,27 @@ isolated hosted project, real cookie browser semantics, manual recovery of
 uncertain admin reset operations and actual lint/format gates remain OPEN.
 Do not merge PR #6 or enable Production provisioning/reset based solely on
 local QA. [Tracked in issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2).
+
+
+## Operator execution — 16 October 2026: cleanup gate BLOCKED
+
+Windows Docker confirmed all existing 9 Auth checks, 5 BFF session gates,
+and seven role-isolation checks (including teacher/counselor exact student IDs,
+principal 403, actor spoof denial, admin-only master lists and direct PostgREST
+denial). However the role suite ended with `LOCAL_ROLE_QA_CLEANUP_FAILED`,
+followed by isolated Docker project's STOP message. **No final
+`LOCAL_ROLE_E2E_QA_PASS` was produced.**
+
+This run is **NOT PASS** for M-002C2D because synthetic fixture cleanup
+was not independently verified. No hosted Supabase or production accounts were
+used; the temporary stack is reported stopped.
+
+The next revision adds bounded step diagnostics:
+`LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: SCOPES_CLEAR_...`,
+`ACTOR_N_UNBIND_...`, and `ACTOR_N_AUTH_DELETE_...`. The tags disclose
+only a synthetic step label and a sanitized provider error code, never
+DB error messages, credentials, user IDs or tokens. It attempts subsequent
+teardown steps even if an earlier step fails and returns FAIL if any are
+unconfirmed. Run the same disposable `-RoleE2E` command after updating
+the QA clone and share ONLY diagnostic labels. Do not attempt manual
+cleanup on Production or LayarBelajar.
