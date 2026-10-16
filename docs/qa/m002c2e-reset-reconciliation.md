@@ -65,3 +65,28 @@ recovery mechanism. Treat the reset reconciliation gate as BLOCKED until
 an isolated QA recovery implementation, negative authorization tests,
 cleanup and an operator-approved hosted run all PASS. Leave the PR Draft
 and keep Production account creation/reset disabled.
+
+## Read-only classifier acceptance — 16 October 2026
+
+Branch Draft PR #6 now contains a pure, read-only classifier in
+`server/accounts/classifyResetReconciliation.ts` and negative tests in
+`tests/unit/resetReconciliation.test.mjs`. **It is not a recovery endpoint
+and is not wired to a hosted credentials operation.** The data record passed
+to it must come from an authorized, independently verified QA audit context.
+
+| Classifier status | Meaning / required disposition |
+| --- | --- |
+| `EVIDENCE_MISSING` | Essential operation/account/audit evidence absent: block |
+| `IDENTITY_MISMATCH` | Operation, actor or target mismatch: escalate |
+| `INVARIANT_VIOLATION` | Staff role, managed Auth identity, change flag, session revocation or audit contradiction: escalate |
+| `PENDING_MANUAL_REVIEW` | Ledger still pending regardless of Auth provider response: hold |
+| `COMPLETED_MANUAL_REVIEW` | Ledger claims completion with consistent audit; verify independently before closure |
+
+Every result sets `permitsPasswordDisclosure=false`,
+`permitsAutomaticRetry=false`, and `permitsLedgerMutation=false`.
+The classifier cannot authorize a retry or clear an uncertain state.
+Pending/unknown reconciliation remains BLOCKED until a separately designed,
+audited recovery mutation and synthetic hosted QA are accepted.
+
+Code-only CI evidence: [Quality run 38878406423](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38878406423)
+**PASS, 77/77 tests**, with all eight new classifier tests passing.
