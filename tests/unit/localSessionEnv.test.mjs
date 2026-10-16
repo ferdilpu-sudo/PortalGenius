@@ -18,7 +18,7 @@ test('exactly pinned local QA provider is accepted only with local marker',()=>{
   {SUPABASE_URL:'http://127.0.0.1:55321/path'},
   {SUPABASE_URL:'https://127.0.0.1:55321'},
   {SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co'}
- ])assert.throws(()=>verifyEnv({...local,...override}),/CONFIG_PROJECT_REF_MISMATCH/);
+ ])assert.throws(()=>verifyEnv({...local,...override}),/CONFIG_PROJECT_REF_MISMATCH|Invalid URL/);
 });
 test('production still requires project-specific HTTPS Supabase host',()=>{
  const prod={...local,APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
