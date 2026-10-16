@@ -14,7 +14,8 @@
     "preflight": "node scripts/preflight.mjs",
     "lint": "node scripts/quality/lint.mjs",
     "format:check": "node scripts/quality/format.mjs",
-    "format:standard:check": "prettier --check package.json package-lock.json .prettierrc.json"
+    "format:standard:check": "prettier --check package.json package-lock.json .prettierrc.json",
+    "qa:production:readonly": "node --experimental-strip-types scripts/qa/productionReadOnlyPreflight.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.1",
