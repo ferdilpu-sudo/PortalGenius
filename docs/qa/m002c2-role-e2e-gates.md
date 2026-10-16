@@ -1,6 +1,6 @@
 # M-002C2D — Local role-isolation HTTP QA
 
-**Status: CODE READY / WINDOWS DOCKER NOT YET RUN.** Updated 16 October 2026.
+**Status: LOCAL WINDOWS DOCKER E2E PASS; HOSTED PARITY BLOCKED.** Updated 16 October 2026.
 
 This is the next independent gate after Supabase Auth 9/9 PASS and local
 PortalGenius BFF session 5-gate PASS. It exercises the real PortalGenius
@@ -174,3 +174,20 @@ migrations, hosted Auth users or live student records were modified.
 
 [CI for the new cleanup approach: 59/59 unit tests, Windows parser, build and
 audit PASS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38866780711).
+
+## Operator final retest — 16 October 2026: local Docker PASS
+
+The operator reran `powershell -NoProfile -File .\\scripts\\qa-local-auth.ps1 -RoleE2E` against the isolated Docker project after the child-before-parent, full-primary-key row-by-row fixture cleanup fix. The operator's terminal output confirmed:
+
+```text
+LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed
+LOCAL_BFF_SESSION_QA_CLEANUP_PASS: synthetic users removed
+LOCAL_BFF_SESSION_QA_PASS: 5 gates; localhost only; no hosted project accessed
+LOCAL_ROLE_QA_CLEANUP_PASS: synthetic students, staff and roles removed
+LOCAL_ROLE_E2E_QA_PASS: 7 gates; localhost only; no hosted project accessed
+LOCAL_AUTH_QA_STOP: stopping only our isolated project
+```
+
+The same run logged PASS for scoped teacher/counselor active student lists, principal-only list denial, actor spoof resistance, admin-only master lists, and direct table denial. The QA fixture cleanup now passed before the E2E PASS marker. The earlier cleanup failure and stage-21000 diagnostic sections above are historical, **superseded by this local PASS**. This is operator-reported Docker output, not an independently executed hosted acceptance run.
+
+[PR #6 Quality CI for the fix: SUCCESS](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38867033509) (59/59 unit tests per operator; Windows script syntax and source-checks succeeded). Hosted parity, true lint/format, unknown-state reset recovery and staged release acceptance remain BLOCKED. **Leave the PR Draft and Production provisioning/reset disabled.**
