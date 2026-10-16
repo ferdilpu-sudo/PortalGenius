@@ -63,3 +63,7 @@ Branch PR #6 memiliki harness `-SessionE2E` dengan handler HTTP asli (bukan mock
 ## M-002C2D — Role HTTP QA lokal (siap diuji)
 
 PR #6 menyediakan opsi `-RoleE2E` pada harness Docker yang membuat admin, guru A/B, konselor A/B, kepala sekolah dan tujuh siswa sintetis. Endpoint HTTP siswa dan master diuji memakai proyeksi SQL M-002C1 asli, termasuk penugasan aktif/expired, arsip, spoof actor dan akses tabel langsung. **Belum dijalankan operator; jangan klaim PASS.** [Panduan](docs/qa/m002c2-role-e2e-gates.md). Production tetap OFF.
+
+## M-002C2D — Role QA runtime: akses PASS, cleanup BLOCKED (16 Oktober 2026)
+
+Operator menjalankan `-RoleE2E`: Auth provider 9/9 PASS, BFF session 5-gate PASS, tujuh pemeriksaan hak akses lintas peran PASS. Namun `LOCAL_ROLE_QA_CLEANUP_FAILED` muncul saat menghapus fixture, sehingga **tidak ada final Role E2E PASS**. Stack Docker sementara melaporkan STOP. Perubahan Draft PR #6 menambahkan diagnostik teredaksi per tahap cleanup dan tes regresi. Pengujian ulang operator diperlukan; jangan gabungkan PR atau aktifkan Production. [Bukti dan langkah](docs/qa/m002c2-role-e2e-gates.md).
