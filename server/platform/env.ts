@@ -31,6 +31,12 @@ export function verifyEnv(env:Env):VerifiedEnv {
   // the production runtime may not silently point to an unrelated project.
   if(cfg.APP_ORIGIN===PRODUCTION_PAGES_ORIGIN&&cfg.APP_ENV!=='production')
     throw new Error('CONFIG_PRODUCTION_ENV_MISMATCH');
+  // This project intentionally has no hosted staging database. Treat any
+  // staging deployment that points at the real PortalGenius database as a
+  // configuration error, even for read-only application handlers.
+  if(cfg.APP_ENV==='staging'&&
+    cfg.EXPECTED_SUPABASE_PROJECT_REF===PRODUCTION_SUPABASE_REF)
+    throw new Error('CONFIG_STAGING_PRODUCTION_BINDING_BLOCKED');
   if(cfg.APP_ENV==='production'&&(
    cfg.APP_ORIGIN!==PRODUCTION_PAGES_ORIGIN||
    cfg.EXPECTED_SUPABASE_PROJECT_REF!==PRODUCTION_SUPABASE_REF
