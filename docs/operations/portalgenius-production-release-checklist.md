@@ -47,7 +47,12 @@ testing in the live deployment.
 Supabase's official backup documentation states **daily automatic backups
 are provided to Pro, Team and Enterprise projects**, and recommends
 regular Supabase CLI `db dump` exports for Free-tier projects.
-This project has **no independently verified restore point** at this stage.
+**The operator confirmed the Database > Backups dashboard contains NO backup.**
+No independently verified restore point exists.
+A guarded Windows export script and operator instructions are now available:
+[Manual PortalGenius Backup — Windows](portalgenius-free-plan-backup-windows.md).
+The script has not been run on the operator's machine and the absence of
+a test-restored archive still blocks release.
 
 Operator requirements **before enabling account creation or making new
 production academic-data writes**:
