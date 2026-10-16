@@ -39,7 +39,7 @@ begin
  return v_id is not null;
 end $$;
 create function public.pg_qa_unbind_staff(p_user_id uuid)
-returns boolean language plpgsql security definer set search_path='' as $
+returns boolean language plpgsql security definer set search_path='' as $qa$
 begin
  if not exists(select 1 from private.login_identities l where l.auth_user_id=p_user_id
   and l.username_normalized like 'qa_%')
@@ -49,7 +49,7 @@ begin
  delete from private.login_identities where auth_user_id=p_user_id;
  delete from public.accounts where auth_user_id=p_user_id;
  return true;
-end $;
+end $qa$;
 revoke all on function
  public.pg_qa_unbind_staff(uuid),
  public.pg_qa_bind_staff(uuid,text,text,public.app_role),
