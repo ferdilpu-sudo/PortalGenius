@@ -29,6 +29,10 @@ jobs:
           node --check scripts/qa/localRoleE2E.mjs
       - name: Validate public Pages bindings
         run: node scripts/check-wrangler-config.mjs
+      - name: Independent AST security lint
+        run: npm run lint
+      - name: Source whitespace format gate
+        run: npm run format:check
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
