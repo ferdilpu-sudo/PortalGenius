@@ -77,7 +77,7 @@ Operator memilih mode akun staf tanpa email. Pemulihan password tidak menggunaka
 
 ### Gate yang masih BLOCKED / NOT RUN
 
-1. **Kompatibilitas Supabase Auth dengan `@auth.portalgenius.invalid`: NOT RUN**. Saat ini tidak terdapat proyek Supabase QA terisolasi; ada dua proyek terhubung (PortalGenius dan LayarBelajar staging). **Jangan uji Auth create/update/delete pada salah satu proyek utama itu** tanpa rencana lingkungan QA terpisah. Jika alias ditolak provider, ubah desain secara aman daripada menggunakan domain email pihak lain.
+1. **Kompatibilitas lokal Supabase Auth dengan alias `.invalid`: PASS (16 Oktober 2026)**, dibuktikan operator melalui Docker yang terisolasi. **Hosted parity masih NOT RUN.** Jangan uji langsung pada PortalGenius atau LayarBelajar.
 2. Pengujian backend penuh end-to-end dengan akun sintetis guru A/B, konselor, principal; create + login + password change + reset + cleanup pada QA: NOT RUN.
 3. HTTP cookie replay setelah revoke, true concurrent refresh, public signup disabled: NOT RUN ([issue #2](https://github.com/ferdilpu-sudo/PortalGenius/issues/2)).
 4. Workflow recovery manual untuk operasi reset yang pending/unknown: desain fail-closed tersedia, tetapi prosedur rekonsiliasi eksplisit belum dibuat. Jangan aktifkan reset sampai siap.
@@ -93,6 +93,10 @@ Operator telah memastikan Docker Desktop tersedia. Script Windows `scripts/qa-lo
 - Enam uji Auth provider: pembuatan technical alias `.invalid`, login, update password, penolakan password lama, login baru, hapus akun dan penolakan login setelah penghapusan (enam checkpoint keseluruhan; penghapusan dan pasca-penghapusan diuji sebagai langkah terpisah).
 - Kunci CLI dari `supabase status -o env` hanya digunakan di proses lokal; tidak boleh dibagikan ke chat atau GitHub.
 - CLI QA hanya menghentikan project sementara miliknya sendiri dengan `supabase stop --no-backup`, bukan proyek lokal lain.
-- CI Node serta parser PowerShell Windows sudah lulus. **Operator belum menjalankan QA Docker sungguhan; gate provider masih NOT RUN.**
+- CI Node serta parser PowerShell Windows sudah lulus. **Operator menjalankan QA Docker lokal pada 16 Oktober 2026 dan melaporkan PASS.** Gate provider hosted masih NOT RUN.
 
 Production provisioning dan reset tetap dikunci; PR #6 Draft.
+
+## Operator verification — 16 Oktober 2026
+
+`LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed` dan `LOCAL_AUTH_QA_STOP: stopping only our isolated project` dilaporkan dari Windows PowerShell. Log memuat keberhasilan pembuatan identitas sintetis dengan alias teknis, sign-in, admin credential update, penolakan credential lama, sign-in credential baru, penghapusan identitas sintetis dan penolakan login setelah penghapusan. **QA lokal PASS; hosted Auth parity belum diuji.** PR #6 tetap Draft, provisioning dan reset pada Production tetap terkunci.
