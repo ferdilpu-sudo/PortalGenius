@@ -1,0 +1,32 @@
+name: M002C2E isolated hosted QA preflight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hosted-qa-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: hosted-qa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refuse unconfigured hosted QA target
+        env:
+          QA_PAGES_ORIGIN: ${{ vars.QA_PAGES_ORIGIN }}
+          QA_SUPABASE_PROJECT_REF: ${{ vars.QA_SUPABASE_PROJECT_REF }}
+          QA_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.QA_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$QA_PAGES_ORIGIN" ] || [ -z "$QA_SUPABASE_PROJECT_REF" ] || [ -z "$QA_SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo 'HOSTED_QA_CONFIGURATION_MISSING: isolated QA environment required'
+            exit 1
+          fi
+          echo 'HOSTED_QA_CONFIGURATION_PRESENT: checking read-only target'
+      - name: Read-only Pages and Auth binding verification
+        env:
+          QA_PAGES_ORIGIN: ${{ vars.QA_PAGES_ORIGIN }}
+          QA_SUPABASE_PROJECT_REF: ${{ vars.QA_SUPABASE_PROJECT_REF }}
+          QA_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.QA_SUPABASE_PUBLISHABLE_KEY }}
+        run: node --experimental-strip-types scripts/qa/hostedQaPreflight.mjs
