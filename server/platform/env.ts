@@ -14,7 +14,13 @@ export function verifyEnv(env:Env):VerifiedEnv {
   for(const key of required) if(!env[key])throw new Error('CONFIG_MISSING_'+key);
   const cfg=env as VerifiedEnv;
   const url=new URL(cfg.SUPABASE_URL);
-  if(url.protocol!=='https:'||url.hostname!==cfg.EXPECTED_SUPABASE_PROJECT_REF+'.supabase.co'||url.pathname!=='/')
+  // This exact loopback-only exception enables isolated Windows Docker QA.
+  // Production/staging cannot resolve arbitrary HTTP destinations through it.
+  const localQa=cfg.APP_ENV==='local'&&
+    cfg.EXPECTED_SUPABASE_PROJECT_REF==='LOCAL_QA_ONLY'&&
+    cfg.SUPABASE_URL==='http://127.0.0.1:55321';
+  if(!localQa&&(url.protocol!=='https:'||
+    url.hostname!==cfg.EXPECTED_SUPABASE_PROJECT_REF+'.supabase.co'||url.pathname!=='/'))
     throw new Error('CONFIG_PROJECT_REF_MISMATCH');
   const appUrl=new URL(cfg.APP_ORIGIN);
   if(appUrl.origin!==cfg.APP_ORIGIN)throw new Error('CONFIG_APP_ORIGIN_INVALID');
