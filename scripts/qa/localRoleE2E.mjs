@@ -214,23 +214,41 @@ async function main() {
    if(error)failures.push(step+'_ERROR_'+safeCode(error));
    else if(!valid)failures.push(step+'_UNEXPECTED_RESULT');
   };
+  let scopesCleared=false;
   try{
    const cleared=await admin.rpc('pg_qa_clear_role_scopes');
-   failed('SCOPES_CLEAR',cleared.error,cleared.data===true);
+   if(cleared.error){
+    // The local-only SQL RPC raises this deliberately redacted format.
+    // Do not log the untrusted SQL/provider error message itself.
+    const match=/^LOCAL_ROLE_QA_STAGE_([A-Z_]+)_SQLSTATE_([A-Z0-9]{5})$/
+      .exec(cleared.error.message??'');
+    if(match)failures.push('SCOPES_CLEAR_STAGE_'+match[1]+'_SQLSTATE_'+match[2]);
+    else failed('SCOPES_CLEAR',cleared.error,false);
+   }else if(cleared.data!==true){
+    failures.push('SCOPES_CLEAR_UNEXPECTED_RESULT');
+   }else scopesCleared=true;
   }catch{failures.push('SCOPES_CLEAR_EXCEPTION');}
-  for(const [i,user] of [...created].reverse().entries()){
-   const label='ACTOR_'+(created.length-i);
-   if(user.bound){
+  if(scopesCleared){
+   for(const [i,user] of [...created].reverse().entries()){
+    const label='ACTOR_'+(created.length-i);
+    let unbound=!user.bound;
+    if(user.bound){
+     try{
+      const result=await admin.rpc('pg_qa_unbind_staff',{p_user_id:user.id});
+      failed(label+'_UNBIND',result.error,result.data===true);
+      unbound=!result.error&&result.data===true;
+     }catch{failures.push(label+'_UNBIND_EXCEPTION');}
+    }
+    if(!unbound){
+     failures.push(label+'_AUTH_DELETE_SKIPPED_UNBIND_DEPENDENCY');
+     continue;
+    }
     try{
-     const unbound=await admin.rpc('pg_qa_unbind_staff',{p_user_id:user.id});
-     failed(label+'_UNBIND',unbound.error,unbound.data===true);
-    }catch{failures.push(label+'_UNBIND_EXCEPTION');}
+     const deleted=await admin.auth.admin.deleteUser(user.id);
+     failed(label+'_AUTH_DELETE',deleted.error,!deleted.error);
+    }catch{failures.push(label+'_AUTH_DELETE_EXCEPTION');}
    }
-   try{
-    const deleted=await admin.auth.admin.deleteUser(user.id);
-    failed(label+'_AUTH_DELETE',deleted.error,!deleted.error);
-   }catch{failures.push(label+'_AUTH_DELETE_EXCEPTION');}
-  }
+  }else failures.push('ACCOUNT_CLEANUP_SKIPPED_SCOPE_DEPENDENCY');
   if(failures.length>0){
    for(const item of failures)console.error('LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: '+item);
    throw new Error('LOCAL_ROLE_QA_CLEANUP_FAILED');

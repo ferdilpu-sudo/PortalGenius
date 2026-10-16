@@ -13,6 +13,12 @@ test('local role SQL fixture has balanced function delimiters and service-only R
  assert.match(roleSql,/Never copy into supabase\/migrations/);
  assert.match(roleSql,/LOCAL_QA_SEED_NOT_EMPTY_OR_INVALID/);
  assert.match(roleSql,/LOCAL_QA_REFUSE_NON_FIXTURE_DATA/);
+ assert.match(roleSql,/get stacked diagnostics v_code = returned_sqlstate;/i);
+ assert.match(roleSql,/LOCAL_ROLE_QA_STAGE_%_SQLSTATE_%/);
+ for(const stage of ['ASSIGNMENT_STUDENTS','COUNSELOR_ASSIGNMENTS',
+  'TEACHING_ASSIGNMENTS','STUDENTS','TEACHERS','TERMS','SUBJECTS',
+  'ACADEMIC_YEARS','VERIFY_EMPTY'])
+  assert.ok(roleSql.includes("v_step:='"+stage+"'"),stage);
 });
 test('role E2E uses all six synthetic roles and guarded student scope assertions',()=>{
  for(const identifier of [
@@ -24,7 +30,9 @@ test('role E2E uses all six synthetic roles and guarded student scope assertions
  ])assert.ok(runner.includes(identifier),identifier);
  for(const marker of [
   'LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC',
-  'SCOPES_CLEAR','_UNBIND','_AUTH_DELETE','LOCAL_ROLE_QA_CLEANUP_FAILED'
+  'SCOPES_CLEAR','SCOPES_CLEAR_STAGE_',
+  'ACCOUNT_CLEANUP_SKIPPED_SCOPE_DEPENDENCY','_UNBIND',
+  '_AUTH_DELETE_SKIPPED_UNBIND_DEPENDENCY','LOCAL_ROLE_QA_CLEANUP_FAILED'
  ])assert.ok(runner.includes(marker),marker);
  assert.doesNotMatch(runner,/console\.error\(.*?\.message.*?\)/,
    'cleanup must never log provider or database error messages');

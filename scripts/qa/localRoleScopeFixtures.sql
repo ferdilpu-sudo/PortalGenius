@@ -63,24 +63,51 @@ $qa$;
 
 create function public.pg_qa_clear_role_scopes()
 returns boolean language plpgsql volatile security definer set search_path='' as $qa$
+declare
+ v_step text:='FIXTURE_GUARD';
+ v_code text;
 begin
- if exists(select 1 from public.students where nis not like 'QA_%')
-    or exists(select 1 from public.teachers where code not like 'QA_%')
-    or exists(select 1 from public.academic_years where label not like 'QA Synthetic %')
-    or exists(select 1 from public.subjects where code not like 'QA_%')
+ -- This RPC exists only inside a newly created local Docker project.
+ -- Fail closed if any row does not match our synthetic fixture markers.
+ if exists(select 1 from public.students where pg_catalog.left(nis,3)<>'QA_')
+    or exists(select 1 from public.teachers where pg_catalog.left(code,3)<>'QA_')
+    or exists(select 1 from public.academic_years
+              where pg_catalog.left(label,13)<>'QA Synthetic ')
+    or exists(select 1 from public.subjects where pg_catalog.left(code,3)<>'QA_')
+    or exists(select 1 from public.terms where name<>'QA Term')
  then raise exception 'LOCAL_QA_REFUSE_NON_FIXTURE_DATA' using errcode='42501';end if;
+ v_step:='ASSIGNMENT_STUDENTS';
  delete from public.assignment_students;
+ v_step:='COUNSELOR_ASSIGNMENTS';
  delete from public.counselor_assignments;
+ v_step:='TEACHING_ASSIGNMENTS';
  delete from public.teaching_assignments;
- delete from public.students where nis like 'QA_%';
- delete from public.teachers where code like 'QA_%';
+ v_step:='STUDENTS';
+ delete from public.students where pg_catalog.left(nis,3)='QA_';
+ v_step:='TEACHERS';
+ delete from public.teachers where pg_catalog.left(code,3)='QA_';
+ v_step:='TERMS';
  delete from public.terms where name='QA Term';
- delete from public.subjects where code like 'QA_%';
- delete from public.academic_years where label like 'QA Synthetic %';
+ v_step:='SUBJECTS';
+ delete from public.subjects where pg_catalog.left(code,3)='QA_';
+ v_step:='ACADEMIC_YEARS';
+ delete from public.academic_years
+ where pg_catalog.left(label,13)='QA Synthetic ';
+ v_step:='VERIFY_EMPTY';
  return not exists(select 1 from public.students)
     and not exists(select 1 from public.teachers)
     and not exists(select 1 from public.teaching_assignments)
-    and not exists(select 1 from public.counselor_assignments);
+    and not exists(select 1 from public.counselor_assignments)
+    and not exists(select 1 from public.assignment_students)
+    and not exists(select 1 from public.terms)
+    and not exists(select 1 from public.subjects)
+    and not exists(select 1 from public.academic_years);
+exception when others then
+ -- Atomic rollback for this RPC: never partially report cleared fixtures.
+ -- Only reveal a fixed stage label and SQLSTATE; not provider detail or data.
+ get stacked diagnostics v_code = returned_sqlstate;
+ raise exception 'LOCAL_ROLE_QA_STAGE_%_SQLSTATE_%',v_step,v_code
+  using errcode='P0001';
 end;
 $qa$;
 
