@@ -229,16 +229,14 @@ sesuai desain akses tertutup, bukan alasan membuka RLS publik.
 
 Perlindungan password bocor yang diperingatkan Security Advisor
 hanya tersedia di Supabase Pro dan lebih tinggi; tidak ada upgrade
-biaya yang disetujui. [Dokumentasi password security]
-(https://supabase.com/docs/guides/auth/password-security).
+biaya yang disetujui. [Dokumentasi password security](https://supabase.com/docs/guides/auth/password-security).
 Menurut dokumentasi Supabase, paket Free tidak mempunyai backup
 harian otomatis yang dijamin. **Backup/restorasi belum diverifikasi
 dan tetap gate OPEN**; demikian pula kesesuaian variabel deployment
 Cloudflare, penerimaan Auth alias non-deliverable pada hosted, dan
 first-real-user onboarding.
 
-[Checklist rilis Production]
-(docs/operations/portalgenius-production-release-checklist.md).
+[Checklist rilis Production](docs/operations/portalgenius-production-release-checklist.md).
 PR #6 tetap Draft, belum merge, kedua flag create Production
 tetap unset dan password reset Production hard OFF. Tidak ada
 mutasi data Supabase dalam pekerjaan audit ini.
