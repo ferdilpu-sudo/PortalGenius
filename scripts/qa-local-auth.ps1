@@ -108,9 +108,20 @@ try {
                 throw "LOCAL_QA_REQUIRED_PORT_NOT_FOUND: $($pair[0])"
             }
         }
-        # Disable anonymous Auth signup in the isolated local stack.
-        # This tests a local policy; hosted Supabase must be checked separately.
-        $authHeader = [regex]::Match($config, '(?m)^\[auth\]\s*
+        # Disable anonymous sign-up on the temporary local provider only.
+        $authPattern = '(?ms)^\[auth\][^\r\n]*\r?\n.*?(?=^\[|\z)'
+        $authMatch = [regex]::Match($config, $authPattern)
+        if (-not $authMatch.Success) { throw 'LOCAL_QA_AUTH_SECTION_MISSING' }
+        $authBody = $authMatch.Value
+        $signupPattern = '(?m)^(?<start>\s*enable_signup\s*=\s*)(?:true|false)(?<end>\s*(?:#.*)?)$'
+        if (-not [regex]::IsMatch($authBody, $signupPattern)) {
+            throw 'LOCAL_QA_ENABLE_SIGNUP_CONFIG_MISSING'
+        }
+        $authBody = [regex]::Replace($authBody, $signupPattern, '${start}false${end}')
+        $config = $config.Substring(0, $authMatch.Index) + $authBody +
+            $config.Substring($authMatch.Index + $authMatch.Length)
+        [IO.File]::WriteAllText($configPath, $config, [Text.UTF8Encoding]::new($false))
+        Write-Host 'LOCAL_QA_AUTH_SIGNUP_DISABLED: isolated Docker project only'
 
         $initialized = $true # Also clean up containers after partially failed startup.
         Invoke-LocalCli @('start','--exclude',
