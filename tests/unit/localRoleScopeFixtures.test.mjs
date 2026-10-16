@@ -15,6 +15,11 @@ test('local role SQL fixture has balanced function delimiters and service-only R
  assert.match(roleSql,/LOCAL_QA_REFUSE_NON_FIXTURE_DATA/);
  assert.match(roleSql,/get stacked diagnostics v_code = returned_sqlstate;/i);
  assert.match(roleSql,/LOCAL_ROLE_QA_STAGE_%_SQLSTATE_%/);
+ assert.match(roleSql,/for v_link in[\s\S]*select assignment_id,student_id,valid_from[\s\S]*order by assignment_id,student_id,valid_from/);
+ assert.match(roleSql,/where assignment_id=v_link\.assignment_id[\s\S]*student_id=v_link\.student_id and valid_from=v_link\.valid_from/);
+ assert.doesNotMatch(roleSql,/delete from public\.assignment_students\s*;/,
+  'never issue an unscoped multirow assignment_students DELETE');
+ assert.match(roleSql,/LOCAL_QA_ROW_MISSING/);
  for(const stage of ['ASSIGNMENT_STUDENTS','COUNSELOR_ASSIGNMENTS',
   'TEACHING_ASSIGNMENTS','STUDENTS','TEACHERS','TERMS','SUBJECTS',
   'ACADEMIC_YEARS','VERIFY_EMPTY'])

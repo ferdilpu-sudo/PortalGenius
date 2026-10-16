@@ -66,6 +66,8 @@ returns boolean language plpgsql volatile security definer set search_path='' as
 declare
  v_step text:='FIXTURE_GUARD';
  v_code text;
+ v_link record;
+ v_id uuid;
 begin
  -- This RPC exists only inside a newly created local Docker project.
  -- Fail closed if any row does not match our synthetic fixture markers.
@@ -76,23 +78,67 @@ begin
     or exists(select 1 from public.subjects where pg_catalog.left(code,3)<>'QA_')
     or exists(select 1 from public.terms where name<>'QA Term')
  then raise exception 'LOCAL_QA_REFUSE_NON_FIXTURE_DATA' using errcode='42501';end if;
+ -- This is a tiny, local-only fixture. Delete by complete primary key,
+ -- one row per statement, to avoid multirow cardinality interactions.
+ -- SQL remains atomic: any failure rolls back this entire RPC.
  v_step:='ASSIGNMENT_STUDENTS';
- delete from public.assignment_students;
+ for v_link in
+  select assignment_id,student_id,valid_from
+  from public.assignment_students
+  order by assignment_id,student_id,valid_from
+ loop
+  v_step:='ASSIGNMENT_STUDENTS_ROW';
+  delete from public.assignment_students
+   where assignment_id=v_link.assignment_id
+     and student_id=v_link.student_id and valid_from=v_link.valid_from;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='COUNSELOR_ASSIGNMENTS';
- delete from public.counselor_assignments;
+ for v_id in select id from public.counselor_assignments order by id loop
+  v_step:='COUNSELOR_ASSIGNMENTS_ROW';
+  delete from public.counselor_assignments where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='TEACHING_ASSIGNMENTS';
- delete from public.teaching_assignments;
+ for v_id in select id from public.teaching_assignments order by id loop
+  v_step:='TEACHING_ASSIGNMENTS_ROW';
+  delete from public.teaching_assignments where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='STUDENTS';
- delete from public.students where pg_catalog.left(nis,3)='QA_';
+ for v_id in select id from public.students
+  where pg_catalog.left(nis,3)='QA_' order by id loop
+  v_step:='STUDENTS_ROW';
+  delete from public.students where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='TEACHERS';
- delete from public.teachers where pg_catalog.left(code,3)='QA_';
+ for v_id in select id from public.teachers
+  where pg_catalog.left(code,3)='QA_' order by id loop
+  v_step:='TEACHERS_ROW';
+  delete from public.teachers where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='TERMS';
- delete from public.terms where name='QA Term';
+ for v_id in select id from public.terms where name='QA Term' order by id loop
+  v_step:='TERMS_ROW';
+  delete from public.terms where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='SUBJECTS';
- delete from public.subjects where pg_catalog.left(code,3)='QA_';
+ for v_id in select id from public.subjects
+  where pg_catalog.left(code,3)='QA_' order by id loop
+  v_step:='SUBJECTS_ROW';
+  delete from public.subjects where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='ACADEMIC_YEARS';
- delete from public.academic_years
- where pg_catalog.left(label,13)='QA Synthetic ';
+ for v_id in select id from public.academic_years
+  where pg_catalog.left(label,13)='QA Synthetic ' order by id loop
+  v_step:='ACADEMIC_YEARS_ROW';
+  delete from public.academic_years where id=v_id;
+  if not found then raise exception 'LOCAL_QA_ROW_MISSING' using errcode='22000'; end if;
+ end loop;
  v_step:='VERIFY_EMPTY';
  return not exists(select 1 from public.students)
     and not exists(select 1 from public.teachers)
