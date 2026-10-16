@@ -5,7 +5,7 @@ import {isTrustedMutation,readSmallJson} from '../../../../server/platform/reque
 import {verifyCsrf} from '../../../../server/platform/crypto.ts';
 import {restoreSession} from '../../../../server/auth/restoreSession.ts';
 import {hasAdminAccess} from '../../../../contracts/auth/roles.ts';
-import {isProvisioningEnabled} from '../../../../server/accounts/provisioningGate.ts';
+import {isStaffPasswordResetEnabled} from '../../../../server/accounts/provisioningGate.ts';
 import {validateResetPasswordRequest} from '../../../../contracts/accounts/resetPasswordValidation.ts';
 import {isUUID} from '../../../../contracts/master/academicYearValidation.ts';
 import {privilegedClient} from '../../../../server/platform/supabase.ts';
@@ -29,7 +29,7 @@ export async function onRequestPost({request,env}:PageContext):Promise<Response>
   if(!session)return failure(id,401,'NOT_AUTHENTICATED','Sesi tidak berlaku.');
   if(!hasAdminAccess(session.profile))
    return failure(id,403,'FORBIDDEN','Akses khusus administrator.');
-  if(!isProvisioningEnabled(cfg))
+  if(!isStaffPasswordResetEnabled(cfg))
    return failure(id,423,'ACCOUNT_RESETS_LOCKED','Reset password belum diaktifkan.');
   const operationId=request.headers.get('Idempotency-Key');
   if(!isUUID(operationId))
