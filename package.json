@@ -13,7 +13,8 @@
     "test": "node --experimental-strip-types --test tests/unit/*.test.mjs",
     "preflight": "node scripts/preflight.mjs",
     "lint": "node scripts/quality/lint.mjs",
-    "format:check": "node scripts/quality/format.mjs"
+    "format:check": "node scripts/quality/format.mjs",
+    "format:standard:check": "prettier --check package.json package-lock.json .prettierrc.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.1",
@@ -26,6 +27,7 @@
     "@vitejs/plugin-react": "6.1.2",
     "typescript": "5.9.3",
     "vite": "8.3.2",
-    "wrangler": "4.151.0"
+    "wrangler": "4.151.0",
+    "prettier": "3.6.2"
   }
 }
