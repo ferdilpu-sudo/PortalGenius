@@ -240,3 +240,28 @@ first-real-user onboarding.
 PR #6 tetap Draft, belum merge, kedua flag create Production
 tetap unset dan password reset Production hard OFF. Tidak ada
 mutasi data Supabase dalam pekerjaan audit ini.
+
+## M-002C2G — No Supabase dashboard backup; manual Windows export (16 Oktober 2026)
+
+Operator memeriksa halaman Supabase PortalGenius **Database > Backups**
+dan melaporkan **tidak ada backup**. Karena itu release gate
+`BACKUP/RESTORE` masih **BLOCKED**. Tidak ada perubahan database atau
+Auth Production.
+
+Disiapkan `scripts/ops/Backup-PortalGenius.ps1`, perintah
+`pg_dump` (PostgreSQL client 17+) read-only yang hanya menerima
+host/user Supabase untuk project ref `vpglikrkvsnoyjvluigs`.
+Tujuan backup harus folder yang sudah ada dan terenkripsi di luar
+checkout Git; database password diminta secara tersembunyi.
+Arsip `custom` mencakup schema `public`, `private`, `auth`
+dan `supabase_migrations`; catalog dicek berisi Auth users,
+accounts serta login identities. Hash SHA-256 dihitung setelah
+arsip terbuat. Arsip bisa berisi hash password dan data siswa,
+jadi **jangan commit/upload atau kirim**.
+Bentuk backup ini **belum membuktikan restore** dan bukan
+pengganti backup Storage, secret/config, serta rehearsal.
+
+[Manual Windows Backup](docs/operations/portalgenius-free-plan-backup-windows.md)
+dan [Production release checklist](docs/operations/portalgenius-production-release-checklist.md).
+Script tidak dijalankan pada Windows pengguna oleh assistant.
+PR #6 tetap Draft; pembuatan staf Production OFF dan reset hard OFF.
