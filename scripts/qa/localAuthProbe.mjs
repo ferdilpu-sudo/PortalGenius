@@ -130,7 +130,7 @@ async function main() {
     if (!deletedLogin.error)
       throw new Error('LOCAL_QA_DELETED_USER_CAN_SIGNIN');
     console.log('PASS local Auth deleted user no longer signs in');
-    console.log('LOCAL_AUTH_PROVIDER_QA_PASS: 8 checks; no hosted project accessed');
+    console.log('LOCAL_AUTH_PROVIDER_QA_PASS: 9 checks; no hosted project accessed');
   } finally {
     if (createdId && !cleaned) {
       const cleanup = await admin.auth.admin.deleteUser(createdId);
