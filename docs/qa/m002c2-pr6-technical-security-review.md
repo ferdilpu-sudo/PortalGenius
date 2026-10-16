@@ -77,3 +77,40 @@ expected migrations already applied. The remote project was not changed.
 **Release recommendation:** keep PR #6 Draft, record this technical review
 and accept no claims of hosted PASS. No account creation or SQL migration
 was executed against live Supabase as part of this review.
+
+## Follow-up: shared Preview write boundary and GET-only Auth preflight (16 October 2026)
+
+A second code review identified that the existing `isTrustedMutation`
+function compared the caller's Origin/Referer but did **not** check the
+target `request.url`. A Cloudflare Preview inheriting Production
+configuration must never be able to authorize a write by presenting
+Production-looking headers. This is fixed in the common helper, which
+protects staff create, password-change/auth POST, academic-year and other
+master-data mutations. Every mutation must target the exact configured
+application origin.
+
+Additionally, `verifyEnv` now **rejects all staging runtimes bound to the
+PortalGenius production project ref**, even if their Preview URL looks
+different. This is intentional for the operator's single-Supabase-project
+decision: no safe hosted staging DB is available.
+
+New `scripts/qa/productionReadOnlyPreflight.mjs` checks the tracked
+Production public binding and performs only two GET requests: the public
+PortalGenius API health endpoint and Supabase Auth `/auth/v1/settings`.
+The latter must explicitly report `disable_signup=true`; no result
+or key is printed beyond stable PASS/BLOCKED labels. Its unit tests
+verify fail-closed responses, wrong binding, Preview spoof attempts and
+that **no network request occurs for invalid local configuration**.
+
+[Quality CI 38916953736](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38916953736):
+**101/101 unit tests PASS**, typecheck, build, AST lint, source whitespace,
+pinned JSON Prettier, npm audit and Windows script syntax PASS. The
+Production GET-only preflight has **not been executed against live endpoints**,
+and its offline tests must not be represented as live Auth proof.
+
+Remaining: live Auth public signup verification, backup/restore assurance,
+production deployment-variable parity, hosted technical-alias compatibility
+and first real-user onboarding acceptance. No synthetic or destructive
+Production Auth/database QA is authorized. PR remains Draft and both
+account-create release flags remain unset; Production password reset stays
+hard OFF.
