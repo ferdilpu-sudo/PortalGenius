@@ -42,4 +42,8 @@ Pengembangan reset password staf telah selesai pada branch Draft PR #6 (belum di
 
 ## QA Auth lokal dengan Docker
 
-Docker Desktop sudah tersedia di komputer operator. PR #6 menambahkan `scripts/qa-local-auth.ps1` dan pemeriksaan URL localhost saja. Runner CI Windows hanya memeriksa sintaks; **pengujian Docker/Auth yang sebenarnya masih NOT RUN**. Lihat [panduan](docs/qa/m002c2-local-auth-provider.md). Production tetap terkunci.
+Docker Desktop sudah tersedia di komputer operator. PR #6 menambahkan `scripts/qa-local-auth.ps1` dan pemeriksaan URL localhost saja. Runner CI Windows hanya memeriksa sintaks; **Docker Auth QA lokal sudah PASS menurut hasil operator pada 16 Oktober 2026**. Lihat [panduan](docs/qa/m002c2-local-auth-provider.md). Production tetap terkunci.
+
+## Bukti tambahan QA Auth — 16 Oktober 2026
+
+Operator menjalankan pengujian Docker pada Windows dan melaporkan `LOCAL_AUTH_PROVIDER_QA_PASS: 6 checks; no hosted project accessed`. Alamat teknis `.invalid`, login, reset lokal, penolakan password lama, akun sintetis dihapus, dan login sesudah penghapusan ditolak. Stack lokal melaporkan STOP. **PASS lokal tidak berarti PASS hosted.** PR #6 Draft; Production OFF. [Checkpoint](docs/milestones/M002C2A-checkpoint.md).
