@@ -71,10 +71,33 @@ identity have independent evidence.
 - Document and verify manual reconciliation of
   `private.staff_password_reset_ops` pending state. Never mark a reset
   completed from a timeout alone or reissue an uncertain password.
-- Add actual lint and formatter tools, pinned in lockfile with scripts and
-  blocking CI; `tsc` does not qualify as lint.
+- Independent TypeScript-AST security lint and repository-wide source whitespace
+  policy are already wired into `npm run lint` and `npm run format:check` and
+  blocking CI. They are **not** a full ESLint/Biome/Prettier ruleset or
+  automated code formatter. Adopt a standard pinned lint/formatter tool with
+  committed lockfile, and review any repository-wide style migration before
+  closing the complete E3 quality gate.
 - Review before moving PR #6 from Draft; production `ACCOUNT_PROVISIONING_ENABLED`
   remains absent/off and the explicit production-host block remains mandatory.
 
 Evidence must be redacted labels, links to CI and QA project identifiers only.
 Never post keys, session tokens, cookies, passwords, or real account details.
+
+## E1 runner and quality checkpoint — 16 October 2026
+
+- Draft PR #6 adds `.github/workflows/m002c2e-hosted-preflight.yml`, a
+  **manual-only** GitHub Actions definition with `contents: read`, environment
+  `hosted-qa` and mandatory isolated QA inputs. The workflow itself cannot
+  yet be manually dispatched until its file exists on the **default branch**.
+  Do not merge PR #6 solely to make this button available. See
+  [manual runner instructions](m002c2e-hosted-preflight-action.md).
+- Safe alternative prior to that: invoke the existing local read-only preflight
+  script with strictly QA-only environment variables. It rejects Production
+  origin/ref before any network call.
+- PR Quality [run 38870055207](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38870055207)
+  **PASS**: AST lint PASS, whitespace format policy PASS, 69/69 unit tests,
+  typecheck, build, Windows PowerShell parse and npm audit (0 vulnerabilities).
+  These tests provide **code quality evidence only**, not hosted E1 evidence.
+- Neither an isolated Supabase QA project nor an isolated Pages deployment
+  is yet available in the connected project inventory. **Hosted E1/E2 remain
+  BLOCKED**, and Production account provisioning/reset remain disabled.
