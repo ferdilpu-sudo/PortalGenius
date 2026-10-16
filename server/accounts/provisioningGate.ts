@@ -1,16 +1,12 @@
 import type {Env} from '../platform/env.ts';
 import {PRODUCTION_PAGES_ORIGIN,PRODUCTION_SUPABASE_REF} from '../platform/hostedQaBoundary.ts';
 
-function isStagingPreview(env:Env):boolean{
- if(env.APP_ENV!=='staging'||!env.APP_ORIGIN)return false;
- try{
-  const url=new URL(env.APP_ORIGIN);
-  return url.protocol==='https:'&&url.hostname.endsWith('.pages.dev')&&
-   url.hostname!=='portalgenius.pages.dev'&&url.pathname==='/'&&
-   url.origin===env.APP_ORIGIN;
- }catch{return false;}
-}
-function isKnownProduction(env:Env):boolean{
+/**
+ * PortalGenius uses one hosted database. Preview builds can share Production
+ * bindings, so APP_ENV='staging' and a Pages preview hostname are NEVER
+ * evidence of isolation or permission to write.
+ */
+function isExactProductionTarget(env:Env):boolean{
  return env.APP_ENV==='production'&&
   env.APP_ORIGIN===PRODUCTION_PAGES_ORIGIN&&
   env.EXPECTED_SUPABASE_PROJECT_REF===PRODUCTION_SUPABASE_REF&&
@@ -18,22 +14,21 @@ function isKnownProduction(env:Env):boolean{
 }
 
 /**
- * No flags are committed to wrangler.toml. Production account creation
- * requires TWO explicit runtime opt-ins and the exact production identity.
- * This function alone does not authenticate an actor; routes still demand
- * an active admin session, same Origin, CSRF and an idempotency key.
+ * Account creation is OFF by default and only has an explicitly reviewed
+ * Production release path. Both runtime flags must be set deliberately;
+ * neither is committed to wrangler.toml. Caller authorization, Origin, CSRF
+ * and idempotency remain mandatory in the BFF POST handler.
  */
 export function isProvisioningEnabled(env:Env):boolean{
- if(env.ACCOUNT_PROVISIONING_ENABLED!=='enabled')return false;
- if(isStagingPreview(env))return true;
- return isKnownProduction(env)&&env.ACCOUNT_PROVISIONING_RELEASE==='reviewed-v1';
+ return isExactProductionTarget(env)&&
+  env.ACCOUNT_PROVISIONING_ENABLED==='enabled'&&
+  env.ACCOUNT_PROVISIONING_RELEASE==='reviewed-v1';
 }
 
 /**
- * Production password reset stays OFF until an approved, tested recovery
- * protocol for unknown/pending Auth updates exists. A creation release must
- * never accidentally activate reset through a shared feature gate.
+ * There is no approved reconciliation mutation for unknown Auth password
+ * updates. Refuse every reset request on Production, Preview and local.
  */
-export function isStaffPasswordResetEnabled(env:Env):boolean{
- return isStagingPreview(env)&&isProvisioningEnabled(env);
+export function isStaffPasswordResetEnabled(_env:Env):boolean{
+ return false;
 }
