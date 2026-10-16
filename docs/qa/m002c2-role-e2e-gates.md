@@ -110,3 +110,38 @@ teardown steps even if an earlier step fails and returns FAIL if any are
 unconfirmed. Run the same disposable `-RoleE2E` command after updating
 the QA clone and share ONLY diagnostic labels. Do not attempt manual
 cleanup on Production or LayarBelajar.
+
+
+## Operator cleanup diagnostic — 16 October 2026, follow-up
+
+Operator reported that all seven local role assertions PASS, while synthetic teardown was still BLOCKED. Bounded labels:
+
+```text
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: SCOPES_CLEAR_ERROR_21000
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_5_UNBIND_ERROR_23503
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_5_AUTH_DELETE_ERROR_UNKNOWN
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_4_UNBIND_ERROR_23503
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_4_AUTH_DELETE_ERROR_UNKNOWN
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_3_UNBIND_ERROR_23503
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_3_AUTH_DELETE_ERROR_UNKNOWN
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_2_UNBIND_ERROR_23503
+LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: ACTOR_2_AUTH_DELETE_ERROR_UNKNOWN
+LOCAL_ROLE_QA_CLEANUP_FAILED
+```
+
+PostgreSQL 21000 indicates a cardinality violation during the scoped fixture cleanup.
+The later 23503 account deletion failures are consistent with dependent teacher
+rows still referencing those accounts, but the **exact failing SQL DELETE step is
+not proven** by the error code alone. No production data or real identity was used.
+
+The next branch revision instruments the *local-only* SQL teardown with a fixed,
+redacted stage label and SQLSTATE. It now skips unbinding/deleting dependent Auth
+accounts if the relational cleanup fails, so cascading 23503 failures are not
+confused with independent root causes. SQL RPC atomicity is maintained and no
+raw PostgreSQL error messages or secrets are printed.
+
+If the operator next sees
+`LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: SCOPES_CLEAR_STAGE_<STEP>_SQLSTATE_<CODE>`,
+report only that line, plus `LOCAL_ROLE_QA_CLEANUP_FAILED`. These labels do not
+close the gate; they identify the exact local fixture operation to repair.
+Production provisioning/reset stays OFF and PR #6 stays Draft.
