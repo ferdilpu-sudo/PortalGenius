@@ -29,10 +29,14 @@ export function lintSource(filename,source){
   ts.forEachChild(node,visit);
  }
  visit(file);
- for(const match of source.matchAll(/@ts-(?:ignore|nocheck)/g)){
-  const prefix=source.slice(0,match.index);
-  const line=prefix.split('\n').length;
-  failures.push({rule:'no-typecheck-suppression',line,column:match.index-prefix.lastIndexOf('\n')});
+ const scanner=ts.createScanner(ts.ScriptTarget.Latest,false,kind,source);
+ while(scanner.scan()!==ts.SyntaxKind.EndOfFileToken){
+  const token=scanner.getToken();
+  if(token!==ts.SyntaxKind.SingleLineCommentTrivia&&
+   token!==ts.SyntaxKind.MultiLineCommentTrivia)continue;
+  if(!/@ts-(?:ignore|nocheck)\b/.test(scanner.getTokenText()))continue;
+  const where=file.getLineAndCharacterOfPosition(scanner.getTokenPos());
+  failures.push({rule:'no-typecheck-suppression',line:where.line+1,column:where.character+1});
  }
  return failures.sort((a,b)=>a.line-b.line||a.column-b.column);
 }
