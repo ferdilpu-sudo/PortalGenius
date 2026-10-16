@@ -159,3 +159,24 @@ tersendiri; test otomatis destruktif tidak boleh dijalankan pada database
 Production. PR #6 tetap **Draft** dan perubahan UI masih di branch, belum
 berada di aplikasi live. Prosedur:
 [Single-project rollout](docs/operations/portalgenius-single-project-rollout.md).
+
+## M-002C2F — PR #6 security review hardening (16 Oktober 2026)
+
+Review kode menemukan akses mutasi Preview dengan flag staging yang tidak
+membuktikan isolasi database, termasuk jalur reset password; keduanya
+**ditutup**. Fungsi pembuatan akun kini hanya menerima dua opt-in untuk
+origin/ref Production yang persis benar, sedangkan reset password selalu
+OFF. `verifyEnv` mengikat nama environment Production dengan host dan
+project ref Supabase yang tepat. Frontend memvalidasi respons akun dan
+password sementara secara ketat sebelum ditampilkan, termasuk idempotent
+replay. Regression test negatif untuk semua jalur tersebut sudah dibuat.
+
+[Dokumen audit teknis PR #6](docs/qa/m002c2-pr6-technical-security-review.md).
+[GitHub CI #38884677644](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38884677644)
+**PASS: 91/91 unit, typecheck/build, AST security lint, Prettier terbatas,
+npm audit 0, dan Windows parser** pada perubahan kode hasil review.
+Review dokumentasi berikutnya tetap harus menjalankan CI; tidak ada mutasi
+Supabase hosted. **Draft PR tidak di-merge**, flag create Production tetap
+tidak diatur, reset Production masih dikunci. Validasi Auth alias di hosted,
+public signup off, backup/recovery dan verifikasi tampilan nyata tetap
+memerlukan pemeriksaan tersendiri.
