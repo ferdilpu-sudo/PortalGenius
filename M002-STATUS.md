@@ -180,3 +180,30 @@ Supabase hosted. **Draft PR tidak di-merge**, flag create Production tetap
 tidak diatur, reset Production masih dikunci. Validasi Auth alias di hosted,
 public signup off, backup/recovery dan verifikasi tampilan nyata tetap
 memerlukan pemeriksaan tersendiri.
+
+## M-002C2F — Hardened shared write boundary & production read-only preflight (16 Oktober 2026)
+
+Pada audit lanjutan, helper `isTrustedMutation` ditemukan belum
+memvalidasi **origin URL tujuan permintaan**; header Origin/Referer
+saja tidak cukup ketika Cloudflare Preview mewarisi konfigurasi Production.
+Helper bersama telah diperbaiki sehingga semua mutasi yang memakainya
+harus memiliki target URL yang persis sama dengan `APP_ORIGIN`.
+`verifyEnv` juga memblokir kombinasi `APP_ENV=staging` dengan ref
+Supabase PortalGenius Production pada seluruh runtime.
+
+Script `scripts/qa/productionReadOnlyPreflight.mjs` ditambahkan
+sebagai pemeriksaan dua GET saja: kesehatan API Production dan
+`/auth/v1/settings` Supabase yang wajib menampilkan
+`disable_signup=true`. CLI tersedia lewat
+`npm run qa:production:readonly`, membaca hanya nilai publik
+`wrangler.toml`, tanpa service-role key, tanpa perubahan database/akun.
+**CLI live belum dijalankan; hasil unit test stub fetch bukan bukti
+konfigurasi hosted.** Jika semua GET berhasil, itu pun tidak memverifikasi
+cadangan database atau variabel deployment runtime.
+
+[Quality CI 38916953736](https://github.com/ferdilpu-sudo/PortalGenius/actions/runs/38916953736)
+**PASS: 101/101 unit, lint AST, format, typecheck, build, audit 0,
+PowerShell syntax** pada perubahan kode. PR #6 tetap Draft.
+Tidak ada migrasi, fixture, reset, atau provisioning pada Production;
+kedua flag create tetap tidak terpasang dan reset selalu OFF.
+[Laporan review](docs/qa/m002c2-pr6-technical-security-review.md).
