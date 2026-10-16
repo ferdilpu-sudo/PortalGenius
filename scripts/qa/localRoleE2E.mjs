@@ -70,7 +70,7 @@ async function account(admin,username,role,created) {
  });
  check(!result.error&&!!result.data.user?.id,'AUTH_CREATE_FAILED');
  const id=result.data.user.id;
- const item={id,username,role,password,bound:false};
+ const item={id,username,role,password,email,bound:false};
  created.push(item);
  const bound=await admin.rpc('pg_qa_bind_staff',{
   p_user_id:id,p_username:username,p_alias:email,p_role:role
@@ -180,16 +180,24 @@ async function main() {
   const anon=await call('/api/v1/students');
   check(anon.status===401,'ANON_STUDENTS_NOT_DENIED');
   const low=localClient(url,publishable);
-  const auth=await low.auth.signInWithPassword({
-   email:technicalAuthAlias('00000000-0000-4000-8000-000000000001'),
-   password:newTemporaryPassword()
-  });
-  // The fake identity cannot authenticate, and the database API never gets
-  // service-role power even when caller can reach it with a publishable key.
-  check(!!auth.error,'SYNTHETIC_FAKE_AUTH_ACCEPTED');
-  const direct=await low.from('students').select('id');
-  check(!!direct.error,'ANON_DIRECT_STUDENTS_ALLOWED');
-  console.log('PASS anonymous HTTP and direct database table access denied');
+  for(const table of ['students','student_guardians','teaching_assignments']){
+   const direct=await low.from(table).select('id');
+   check(!!direct.error,'ANON_DIRECT_TABLE_ALLOWED_'+table);
+  }
+  for(const username of ['qa_teacher_a','qa_counselor_a']){
+   const user=principals[username];
+   const scoped=localClient(url,publishable);
+   const auth=await scoped.auth.signInWithPassword({
+    email:user.email,password:user.password
+   });
+   check(!auth.error&&auth.data.user?.id===user.id,
+    'AUTHENTICATED_DIRECT_LOGIN_FAILED_'+username);
+   for(const table of ['students','student_guardians','teaching_assignments']){
+    const direct=await scoped.from(table).select('id');
+    check(!!direct.error,'AUTHENTICATED_DIRECT_TABLE_ALLOWED_'+username+'_'+table);
+   }
+  }
+  console.log('PASS anonymous and authenticated staff direct table access denied');
   success=true;
  }finally{
   if(started)await new Promise(resolve=>web.close(resolve));
