@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {onRequestPost} from '../../functions/api/v1/accounts/create.ts';
-import {isProvisioningEnabled} from '../../server/accounts/provisioningGate.ts';
+import {isProvisioningEnabled,isStaffPasswordResetEnabled} from '../../server/accounts/provisioningGate.ts';
 test('account provisioning flag is OFF without explicit staging opt-in',()=>{
  assert.equal(isProvisioningEnabled({APP_ENV:'staging'}),false);
  assert.equal(isProvisioningEnabled({APP_ENV:'production',ACCOUNT_PROVISIONING_ENABLED:'enabled'}),false);
@@ -10,6 +10,30 @@ test('account provisioning flag is OFF without explicit staging opt-in',()=>{
   APP_ORIGIN:'https://portalgenius.pages.dev'}),false);
  assert.equal(isProvisioningEnabled({APP_ENV:'staging',ACCOUNT_PROVISIONING_ENABLED:'enabled',
   APP_ORIGIN:'https://test-m002c2.portalgenius.pages.dev'}),true);
+});
+test('production creation requires explicit dual opt-in and exact project identity',()=>{
+ const production={APP_ENV:'production',APP_ORIGIN:'https://portalgenius.pages.dev',
+  EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+  SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co'};
+ assert.equal(isProvisioningEnabled(production),false);
+ assert.equal(isProvisioningEnabled({...production,ACCOUNT_PROVISIONING_ENABLED:'enabled'}),false);
+ const enabled={...production,ACCOUNT_PROVISIONING_ENABLED:'enabled',
+  ACCOUNT_PROVISIONING_RELEASE:'reviewed-v1'};
+ assert.equal(isProvisioningEnabled(enabled),true);
+ assert.equal(isStaffPasswordResetEnabled(enabled),false);
+ for(const change of [
+  {APP_ENV:'staging'}, {APP_ORIGIN:'https://portalgenius.pages.dev.attacker.test'},
+  {SUPABASE_URL:'https://other.supabase.co'},
+  {EXPECTED_SUPABASE_PROJECT_REF:'other'},
+  {ACCOUNT_PROVISIONING_RELEASE:'yes'},
+  {ACCOUNT_PROVISIONING_ENABLED:'true'}
+ ])assert.equal(isProvisioningEnabled({...enabled,...change}),false);
+});
+test('staging flag cannot enable password reset on production origin',()=>{
+ const env={APP_ENV:'staging',APP_ORIGIN:'https://portalgenius.pages.dev',
+  ACCOUNT_PROVISIONING_ENABLED:'enabled'};
+ assert.equal(isProvisioningEnabled(env),false);
+ assert.equal(isStaffPasswordResetEnabled(env),false);
 });
 test('account create blocks anonymous caller without reading secrets',async()=>{
  const response=await onRequestPost({request:new Request('https://portalgenius.pages.dev/api/v1/accounts/create',{
