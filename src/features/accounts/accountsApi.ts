@@ -8,7 +8,10 @@ export type StaffCreation={
  temporaryPassword:string|null;alreadyCompleted:boolean
 };
 export class AccountRequestError extends Error{
- constructor(readonly code:string,message:string){super(message);this.name='AccountRequestError';}
+ readonly code:string;
+ constructor(code:string,message:string){
+  super(message);this.name='AccountRequestError';this.code=code;
+ }
 }
 async function readBody<T>(response:Response):Promise<Envelope<T>>{
  try{return await response.json() as Envelope<T>;}
