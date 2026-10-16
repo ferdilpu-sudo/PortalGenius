@@ -22,11 +22,21 @@ For intended manual operation:
 
 1. Verify with two maintainers that the Pages QA deployment really uses a
    separate Supabase project and that public signup is disabled.
-2. From repository Actions, choose `M002C2E isolated hosted QA preflight`,
-   then `Run workflow` on branch `feat/m002c2-account-provisioning-gates`.
-3. Record the run URL and only the safe PASS/BLOCKED labels; never copy raw
-   API keys or session tokens.
-4. If missing configuration, mismatched runtime binding, unexpected
+2. **Important:** GitHub Actions requires a `workflow_dispatch` workflow
+   to exist on the default branch before the Actions UI will offer
+   **Run workflow**. This workflow currently exists only in Draft PR #6
+   and therefore cannot yet be manually dispatched. **Do not merge the
+   provisioning PR merely to activate the QA workflow.** Once independently
+   reviewed and available on the default branch, choose
+   `M002C2E isolated hosted QA preflight` in Actions and select the
+   intended QA-enabled ref.
+3. Until then, execute the same read-only
+   `node --experimental-strip-types scripts/qa/hostedQaPreflight.mjs`
+   locally using the QA-only environment placeholders documented in
+   `m002c2e-hosted-parity.md`. The target refusal rules are identical.
+4. Record the run URL (where available) and only the safe PASS/BLOCKED
+   labels; never copy raw API keys or session tokens.
+5. If missing configuration, mismatched runtime binding, unexpected
    response, non-HTTPS target, disabled key, or public signup enabled,
    keep Hosted E1 **BLOCKED**. Do not substitute another environment.
 
