@@ -202,18 +202,39 @@ async function main() {
  }finally{
   if(started)await new Promise(resolve=>web.close(resolve));
   else web.close();
-  let cleanupFailed=false;
-  const cleared=await admin.rpc('pg_qa_clear_role_scopes');
-  if(cleared.error||cleared.data!==true)cleanupFailed=true;
-  for(const user of created.reverse()){
+  // Report ONLY bounded error categories and provider codes. Never print
+  // SQL error messages, auth identities, cookies, credentials or raw responses.
+  const failures=[];
+  const safeCode=error=>{
+   const code=error?.code;
+   return typeof code==='string'&&/^[A-Za-z0-9_]{3,32}$/.test(code)
+    ?code.toUpperCase():'UNKNOWN';
+  };
+  const failed=(step,error,valid)=>{
+   if(error)failures.push(step+'_ERROR_'+safeCode(error));
+   else if(!valid)failures.push(step+'_UNEXPECTED_RESULT');
+  };
+  try{
+   const cleared=await admin.rpc('pg_qa_clear_role_scopes');
+   failed('SCOPES_CLEAR',cleared.error,cleared.data===true);
+  }catch{failures.push('SCOPES_CLEAR_EXCEPTION');}
+  for(const [i,user] of [...created].reverse().entries()){
+   const label='ACTOR_'+(created.length-i);
    if(user.bound){
-    const unbound=await admin.rpc('pg_qa_unbind_staff',{p_user_id:user.id});
-    if(unbound.error||unbound.data!==true)cleanupFailed=true;
+    try{
+     const unbound=await admin.rpc('pg_qa_unbind_staff',{p_user_id:user.id});
+     failed(label+'_UNBIND',unbound.error,unbound.data===true);
+    }catch{failures.push(label+'_UNBIND_EXCEPTION');}
    }
-   const deleted=await admin.auth.admin.deleteUser(user.id);
-   if(deleted.error)cleanupFailed=true;
+   try{
+    const deleted=await admin.auth.admin.deleteUser(user.id);
+    failed(label+'_AUTH_DELETE',deleted.error,!deleted.error);
+   }catch{failures.push(label+'_AUTH_DELETE_EXCEPTION');}
   }
-  if(cleanupFailed)throw new Error('LOCAL_ROLE_QA_CLEANUP_FAILED');
+  if(failures.length>0){
+   for(const item of failures)console.error('LOCAL_ROLE_QA_CLEANUP_DIAGNOSTIC: '+item);
+   throw new Error('LOCAL_ROLE_QA_CLEANUP_FAILED');
+  }
   console.log('LOCAL_ROLE_QA_CLEANUP_PASS: synthetic students, staff and roles removed');
  }
  check(success,'INCOMPLETE');
