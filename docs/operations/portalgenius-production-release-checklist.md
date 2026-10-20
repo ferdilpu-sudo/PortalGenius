@@ -51,8 +51,20 @@ regular Supabase CLI `db dump` exports for Free-tier projects.
 No independently verified restore point exists.
 A guarded Windows export script and operator instructions are now available:
 [Manual PortalGenius Backup — Windows](portalgenius-free-plan-backup-windows.md).
-The script has not been run on the operator's machine and the absence of
-a test-restored archive still blocks release.
+The operator **ran the archive script on 20 October 2026**. It reported
+`BACKUP_ARCHIVE_CREATED`, size `216164` bytes and successful catalog
+checks for Auth and application account tables. The generated artifact
+was `portalgenius-20261020T012220Z-fa658bf7.dump`, with operator-reported
+SHA-256:
+`751FD909A9B1AF9180BE36AD8986223FB608824F7E7BF2FCBDB8DF6EECD99318`.
+No dump bytes or credentials were uploaded to GitHub.
+
+**The export is not a proven disaster recovery point:** encryption of
+the destination and a separate off-device copy have not been independently
+verified; no isolated restore rehearsal has been performed. The
+`BACKUP_RESTORE_NOT_VERIFIED` and `BACKUP_EXTERNAL_COPY_REQUIRED`
+operator outputs are still open release gates. Re-run integrity
+verification locally before attempting a future restoration.
 
 Operator requirements **before enabling account creation or making new
 production academic-data writes**:
@@ -128,7 +140,8 @@ database writes.
 | API Production health (live GET) | OPERATOR PASS |
 | Local/CI tests and build | PASS at reviewed commits |
 | Application RLS / direct-table grant metadata | READ-ONLY VERIFIED |
-| Backup availability, restore rehearsal | OPEN |
+| Production database archive | CREATED — operator-reported, integrity hash captured |
+| Backup restore rehearsal and off-device encrypted copy | OPEN / UNVERIFIED |
 | Cloudflare live environment/secret binding parity | OPEN |
 | Hosted staff Auth alias and first real-user handoff | OPEN |
 | Production staff creation | OFF |
