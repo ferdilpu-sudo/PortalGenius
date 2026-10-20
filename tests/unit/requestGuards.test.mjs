@@ -22,16 +22,19 @@ test('JSON body parser rejects wrong type, oversized payload and bad JSON',async
 });
 test('environment must target dedicated Supabase project and HTTPS hosted',()=>{
   const good={
-    SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co',
+    SUPABASE_URL:'https://abcdefghijklmnopqrst.supabase.co',
     SUPABASE_PUBLISHABLE_KEY:'synthetic-publishable-key',
     SUPABASE_SECRET_KEY:'synthetic-secret-key',
     SESSION_ENCRYPTION_KEY:'synthetic-session-key',
     SESSION_KEY_VERSION:'1',APP_ORIGIN:'https://portalgenius.example.org',
     APP_ENV:'staging',AUTH_ALIAS_DOMAIN:'accounts.example.org',
-    EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs'
+    EXPECTED_SUPABASE_PROJECT_REF:'abcdefghijklmnopqrst'
   };
   assert.equal(verifyEnv(good).APP_ENV,'staging');
   assert.equal(verifyEnv({...good,AUTH_ALIAS_DOMAIN:undefined}).APP_ENV,'staging');
+  assert.throws(()=>verifyEnv({...good,
+    EXPECTED_SUPABASE_PROJECT_REF:'vpglikrkvsnoyjvluigs',
+    SUPABASE_URL:'https://vpglikrkvsnoyjvluigs.supabase.co'}),/CONFIG_STAGING_PRODUCTION_BINDING_BLOCKED/);
   assert.throws(()=>verifyEnv({...good,SUPABASE_URL:'https://qfkjcjzwhewsbblgumco.supabase.co'}));
   assert.throws(()=>verifyEnv({...good,APP_ORIGIN:'http://portalgenius.example.org'}));
   assert.throws(()=>verifyEnv({...good,SESSION_KEY_VERSION:'0'}));
