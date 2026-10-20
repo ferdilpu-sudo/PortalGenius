@@ -265,3 +265,26 @@ pengganti backup Storage, secret/config, serta rehearsal.
 dan [Production release checklist](docs/operations/portalgenius-production-release-checklist.md).
 Script tidak dijalankan pada Windows pengguna oleh assistant.
 PR #6 tetap Draft; pembuatan staf Production OFF dan reset hard OFF.
+
+## M-002C2H — Production logical backup archive created (20 Oktober 2026)
+
+Operator menjalankan `Backup-PortalGenius.ps1` di Windows dengan
+PostgreSQL 18 client dan melaporkan status
+**`BACKUP_ARCHIVE_CREATED`**; dump `custom` sebesar
+**216164 byte**, dengan pengecekan catalog berhasil mencakup
+tabel `auth.users`, `public.accounts`, dan
+`private.login_identities`. SHA-256 telah dicatat pada
+[checklist rilis](docs/operations/portalgenius-production-release-checklist.md).
+Hasil script masih
+`BACKUP_RESTORE_NOT_VERIFIED` dan
+`BACKUP_EXTERNAL_COPY_REQUIRED`.
+
+Checkpoint ini adalah **BACKUP_EXPORT_PASS (operator-reported)**,
+bukan `RECOVERY_VERIFIED`. Lokasi tujuan belum dibuktikan
+terenkripsi dan belum ada bukti salinan off-device.
+Restore rehearsal ke database Docker yang **terisolasi**
+akan disusun terpisah, tanpa menimpa proyek Supabase Production.
+Jangan unggah file .dump atau password database.
+
+PR #6 tetap Draft; kedua flag pembuatan akun tetap OFF,
+password reset hard OFF, tidak ada merge atau perubahan Production.
